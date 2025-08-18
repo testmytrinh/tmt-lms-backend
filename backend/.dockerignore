@@ -1,0 +1,68 @@
+# Python
+**__pycache__**
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pyo
+*.pdb
+
+# Django
+*.sqlite3
+*.log
+*.pot
+*.pyc
+*.mo
+*.db
+db.sqlite3
+.env
+.env.*
+
+# Environment
+*.env
+.venv/
+venv/
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Git & VCS
+.git/
+.gitignore
+.gitattributes
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Node/Frontend (optional if using webpack/React/Vite)
+node_modules/
+npm-debug.log
+yarn.lock
+pnpm-lock.yaml
+dist/
+build/
+
+# Docker-specific
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Tests
+.coverage
+htmlcov/
+*.cover
+*.pytest_cache
+.tox/
+tests/
+
+# Static/media (if collected/generated)
+staticfiles/
+media/

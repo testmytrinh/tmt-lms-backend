@@ -1,0 +1,26 @@
+[
+    {
+        "email": "admin@example.com",
+        "password": "1",
+        "role": "Admin",
+        "is_active": true
+    },
+    {
+        "email": "teacher@example.com",
+        "password": "1",
+        "role": "Teacher",
+        "is_active": true
+    },
+    {
+        "email": "student@example.com",
+        "password": "1",
+        "role": "Student",
+        "is_active": true
+    },
+    {
+        "email": "guest@example.com",
+        "password": "1",
+        "role": "Guest",
+        "is_active": true
+    }
+]
