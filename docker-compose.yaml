@@ -1,10 +1,10 @@
 networks:
         lms:
-                external: true
+                driver: bridge
 
 volumes:
         lms_db:
-        # lms_rabbitmq:
+        lms_spice_db:
 
 x-backend-service: &backend-service
         image: lms-backend
@@ -25,8 +25,25 @@ x-backend-service: &backend-service
         build:
                 context: ./backend
                 dockerfile: Dockerfile.dev
+        develop:
+                watch:
+                        - path: ./backend
+                          action: sync
+                          target: /app
+
+x-openfga: &openfga
+        image: openfga/openfga:v1.9.5
+        user: nonroot
+        environment:
+                OPENFGA_LOG_FORMAT: json
+                OPENFGA_AUTHN_METHOD: preshared
+                OPENFGA_AUTHN_PRESHARED_KEYS: ${OPENFGA_AUTHN_PRESHARED_KEYS:?error}
+                OPENFGA_DATASTORE_ENGINE: sqlite
+                OPENFGA_DATASTORE_URI: file:/home/nonroot/data.openfga.db
+        networks:
+                - lms
         volumes:
-                - ./backend/:/app
+                - ./openfga:/home/nonroot
 
 services:
         lms-db:
@@ -122,3 +139,21 @@ services:
         #                         condition: service_healthy
         #                 lms-rabbitmq:
         #                         condition: service_healthy
+
+        openfga-migrate:
+                <<: *openfga
+                command: migrate
+
+        openfga:
+                <<: *openfga
+                command: run
+                ports:
+                        # Needed for the http server
+                        - "8080:8080"
+                        # Needed for the grpc server (if used)
+                        - "8081:8081"
+                        # Needed for the playground (Do not enable in prod!)
+                        - "3000:3000"
+                depends_on:
+                        openfga-migrate:
+                                condition: service_completed_successfully

@@ -42,10 +42,6 @@ class UserAdmin(BaseUserAdmin):
         "email",
         "is_staff",
         "is_superuser",
-        "is_admin",
-        "is_teacher",
-        "is_student",
-        "is_guest",
         "is_active",
     )
     list_filter = ("is_staff", "is_superuser", "is_active", "groups")

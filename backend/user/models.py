@@ -1,9 +1,7 @@
-from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-# from itsdangerous import URLSafeTimedSerializer
 
 
 class MyUserManager(BaseUserManager):
@@ -26,53 +24,20 @@ class MyUserManager(BaseUserManager):
         if extra_fields.get("is_superuser") is not True:
             raise ValueError(_("Superuser must have is_superuser=True."))
 
-        user = self.create_user(
-            email=email, password=password, role=Role.ADMIN, **extra_fields
-        )
+        user = self.create_user(email=email, password=password, **extra_fields)
         return user
-
-
-class Role(models.TextChoices):
-    ADMIN = "Admin"
-    TEACHER = "Teacher"
-    STUDENT = "Student"
-    GUEST = "Guest"
 
 
 class User(AbstractUser):
     username = None
     email = models.EmailField(_("email address"), unique=True)
-    # avatar field is key of a s3 object
     avatar = models.CharField(max_length=255, blank=False, null=True)
     is_active = models.BooleanField(default=False)
-    role = models.CharField(
-        max_length=10,
-        choices=Role.choices,
-        default=Role.GUEST,
-        blank=False,
-        null=False,
-    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
     objects = MyUserManager()
-
-    @property
-    def is_admin(self):
-        return self.role == Role.ADMIN
-
-    @property
-    def is_teacher(self):
-        return self.role == Role.TEACHER
-
-    @property
-    def is_student(self):
-        return self.role == Role.STUDENT
-
-    @property
-    def is_guest(self):
-        return self.role == Role.GUEST
 
     # @property
     # def avatar_url(self):
