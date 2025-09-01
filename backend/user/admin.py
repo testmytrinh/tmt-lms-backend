@@ -1,19 +1,28 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
+from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import Group
+from unfold.admin import ModelAdmin
+from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
 
-from .forms import UserChangeForm, UserCreationForm
+# For using unfold
+admin.site.unregister(Group)
 
 User = get_user_model()
 
 
-class UserAdmin(BaseUserAdmin):
-    list_filter = ("is_staff", "is_superuser", "is_active")
+class GroupAdmin(BaseGroupAdmin, ModelAdmin):
+    pass
 
+
+class UserAdmin(BaseUserAdmin, ModelAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
+    change_password_form = AdminPasswordChangeForm
+
     fieldsets = (
-        (None, {"fields": ("email", "password", "avatar", "role")}),
+        (None, {"fields": ("email", "password", "avatar")}),
         ("Personal info", {"fields": ("first_name", "last_name")}),
         (
             "Permissions",
@@ -29,23 +38,32 @@ class UserAdmin(BaseUserAdmin):
         ),
         ("Important dates", {"fields": ("last_login", "date_joined")}),
     )
-    add_fieldsets = (
-        (
-            None,
-            {
-                "classes": ("wide",),
-                "fields": ("email", "password1", "password2", "role", "avatar"),
-            },
-        ),
-    )
     list_display = (
         "email",
         "is_staff",
         "is_superuser",
         "is_active",
     )
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "email",
+                    "password1",
+                    "password2",
+                    "first_name",
+                    "last_name",
+                    "avatar",
+                ),
+            },
+        ),
+    )
+
     list_filter = ("is_staff", "is_superuser", "is_active", "groups")
     ordering = ("email",)
 
 
+admin.site.register(Group, GroupAdmin)
 admin.site.register(User, UserAdmin)
