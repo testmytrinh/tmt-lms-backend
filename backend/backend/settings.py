@@ -1,6 +1,8 @@
 from datetime import timedelta
 from os import getenv
+import os
 from pathlib import Path
+from django.templatetags.static import static
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,6 +47,8 @@ INSTALLED_APPS = [
     "user",
     "config",
     "seed",
+    "institution",
+    "courses",
 ]
 
 MIDDLEWARE = [
@@ -136,6 +140,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")  # for collectstatic
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, "static"),  # your static/ files folder
+# ]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -182,6 +190,18 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
 }
 
+UNFOLD = {
+    "SITE_TITLE": "TMT.vi",
+    "SITE_HEADER": "TMT.vi",
+    "SITE_ICON": lambda request: static("favicon.svg"),
+    "SITE_FAVICONS": [
+        {
+            "rel": "icon",
+            "type": "image/svg+xml",
+            "href": lambda request: static("favicon.svg"),
+        },
+    ],
+}
 
 CRISPY_TEMPLATE_PACK = "unfold_crispy"
 

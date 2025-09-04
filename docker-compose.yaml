@@ -6,24 +6,40 @@ networks:
 volumes:
   lms_db:
 
+x-backend-vars: &backend-vars
+  DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?error}
+  DJANGO_PORT: ${DJANGO_PORT:-8000}
+  DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+
+  DB_ENGINE: ${DB_ENGINE:-django.db.backends.postgresql}
+  DB_USER: ${DB_USER:?error}
+  DB_PASSWORD: ${DB_PASSWORD:?error}
+  DB_NAME: ${DB_NAME:?error}
+  DB_PORT: ${DB_PORT:?error}
+  DB_HOST: lms-db
+  DB_SSLMODE: ${DB_SSLMODE:-disable}
+  DB_CHANNEL_BINDING: ${DB_CHANNEL_BINDING:-disable}
+
+  RBMQ_PROTOCOL: ${RBMQ_PROTOCOL:-amqp}
+  RBMQ_HOST: lms-rabbitmq
+  RBMQ_PORT: ${RBMQ_PORT:-5672}
+  RBMQ_USER: ${RBMQ_USER:?error}
+  RBMQ_PASSWORD: ${RBMQ_PASSWORD:?error}
+  RBMQ_VHOST: ${RBMQ_VHOST:-/}
+
+  EMAIL_HOST: ${EMAIL_HOST}
+  EMAIL_PORT: ${EMAIL_PORT}
+  EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+  EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+
+  OPENFGA_API_URL: ${OPENFGA_API_URL:-http://openfga:8080}
+  OPENFGA_API_TOKEN: ${OPENFGA_API_TOKEN}
+  OPENFGA_STORE_ID: ${OPENFGA_STORE_ID:?error}
+
 x-backend-service: &backend-service
   image: lms-backend
   environment:
-    DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?error}
-    DJANGO_PORT: ${DJANGO_PORT:-8000}
-    DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
-    DB_ENGINE: ${DB_ENGINE:-django.db.backends.postgresql}
-    DB_USER: ${DB_USER:?error}
-    DB_PASSWORD: ${DB_PASSWORD:?error}
-    DB_NAME: ${DB_NAME:?error}
-    DB_PORT: ${DB_PORT:?error}
-    DB_HOST: lms-db
-    DB_SSLMODE: ${DB_SSLMODE:-disable}
-    DB_CHANNEL_BINDING: ${DB_CHANNEL_BINDING:-disable}
-    EMAIL_HOST: ${EMAIL_HOST}
-    EMAIL_PORT: ${EMAIL_PORT}
-    EMAIL_HOST_USER: ${EMAIL_HOST_USER}
-    EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+    <<: *backend-vars
   networks:
     - lms
   build:
@@ -44,7 +60,7 @@ x-openfga: &openfga
   environment:
     OPENFGA_LOG_FORMAT: json
     OPENFGA_AUTHN_METHOD: preshared
-    OPENFGA_AUTHN_PRESHARED_KEYS: ${OPENFGA_AUTHN_PRESHARED_KEYS:?error}
+    OPENFGA_AUTHN_PRESHARED_KEYS: ${OPENFGA_API_TOKEN:?error}
     OPENFGA_DATASTORE_ENGINE: sqlite
     OPENFGA_DATASTORE_URI: file:/home/nonroot/data.openfga.db
   networks:
@@ -71,27 +87,25 @@ services:
       timeout: 30s
       retries: 5
 
-  # lms-rabbitmq:
-  #         image: rabbitmq:4.0.7-management-alpine
-  #         environment:
-  #                 RABBITMQ_DEFAULT_USER: ${RBMQ_USER}
-  #                 RABBITMQ_DEFAULT_PASS: ${RBMQ_PASSWORD}
-  #         ports:
-  #                 - "15672:15672"
-  #                 - "${RBMQ_PORT}:${RBMQ_PORT}"
-  #         networks:
-  #                 - lms
-  #         volumes:
-  #                 - lms_rabbitmq:/var/lib/rabbitmq
-  #         healthcheck:
-  #                 test:
-  #                         [
-  #                                 "CMD-SHELL",
-  #                                 "rabbitmq-diagnostics -q ping || exit 1",
-  #                         ]
-  #                 interval: 10s
-  #                 timeout: 30s
-  #                 retries: 3
+  lms-rabbitmq:
+    image: rabbitmq:4.1-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RBMQ_USER:?error}
+      RABBITMQ_DEFAULT_PASS: ${RBMQ_PASSWORD:?error}
+      RABBITMQ_DEFAULT_VHOST: ${RBMQ_VHOST:-/}
+    networks:
+      - lms
+    volumes:
+      - lms_rabbitmq:/var/lib/rabbitmq
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "rabbitmq-diagnostics -q ping || exit 1",
+        ]
+      interval: 10s
+      timeout: 30s
+      retries: 3
 
   lms-backend:
     <<: *backend-service
@@ -147,7 +161,7 @@ services:
       # Needed for the http server
       - "8080:8080"
       # Needed for the grpc server (if used)
-      - "8081:8081"
+      # - "8081:8081"
       # Needed for the playground (Do not enable in prod!)
       - "3000:3000"
     depends_on:

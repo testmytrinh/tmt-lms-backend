@@ -1,0 +1,34 @@
+model
+  schema 1.1
+
+type user
+
+type group
+  relations
+    define member: [user]
+
+type course_class
+  relations
+    define teacher: [user, group#member]
+    define student: [user, group#member]
+    define guest: [user, user:*]
+    define can_edit: teacher
+    define can_view: student or guest or can_edit
+
+type folder
+  relations
+    define owner: [user]
+    define parent: [folder]
+    define editor: [user, user:*, group#member]
+    define viewer: [user, user:*, group#member]
+    define can_edit: editor or owner or can_edit from parent
+    define can_view: viewer or can_view from parent or can_edit
+
+type file
+  relations
+    define owner: [user]
+    define parent: [folder]
+    define editor: [user, user:*, group#member] 
+    define viewer: [user, user:*, group#member]
+    define can_edit: editor or owner or can_edit from parent
+    define can_view: viewer or can_view from parent or can_edit
