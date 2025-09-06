@@ -5,10 +5,12 @@ networks:
 
 volumes:
   lms_db:
+  lms_rabbitmq:
+  caddy_data:
+  caddy_config:
 
 x-backend-vars: &backend-vars
   DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?error}
-  DJANGO_PORT: ${DJANGO_PORT:-8000}
   DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
 
   DB_ENGINE: ${DB_ENGINE:-django.db.backends.postgresql}
@@ -32,7 +34,7 @@ x-backend-vars: &backend-vars
   EMAIL_HOST_USER: ${EMAIL_HOST_USER}
   EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
 
-  OPENFGA_API_URL: ${OPENFGA_API_URL:-http://openfga:8080}
+  OPENFGA_API_URL: http://openfga:8080
   OPENFGA_API_TOKEN: ${OPENFGA_API_TOKEN}
   OPENFGA_STORE_ID: ${OPENFGA_STORE_ID:?error}
 
@@ -69,14 +71,31 @@ x-openfga: &openfga
     - ./openfga:/home/nonroot
 
 services:
+  caddy:
+    image: caddy:2.10.2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy:/etc/caddy
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - lms
+    depends_on:
+      lms-backend:
+        condition: service_started
+      openfga:
+        condition: service_started
+
   lms-db:
     image: postgres:17.3-alpine
     environment:
       POSTGRES_USER: ${DB_USER:?error}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?error}
       POSTGRES_DB: ${DB_NAME:?error}
-    ports:
-      - "${DB_PORT:?error}:5432"
+    # ports:
+    #   - "${DB_PORT:?error}:5432"
     networks:
       - lms
     volumes:
@@ -109,9 +128,7 @@ services:
 
   lms-backend:
     <<: *backend-service
-    command: ["uv", "run", "manage.py", "runserver", "0.0.0.0:${DJANGO_PORT}"]
-    ports:
-      - "${DJANGO_PORT}:${DJANGO_PORT}"
+    command: ["uv", "run", "manage.py", "runserver", "0.0.0.0:8000"]
     depends_on:
       lms-db:
         condition: service_healthy
@@ -157,13 +174,13 @@ services:
   openfga:
     <<: *openfga
     command: run
-    ports:
-      # Needed for the http server
-      - "8080:8080"
-      # Needed for the grpc server (if used)
-      # - "8081:8081"
-      # Needed for the playground (Do not enable in prod!)
-      - "3000:3000"
+    # ports:
+    #   # Needed for the http server
+    #   - "8080:8080"
+    #   # Needed for the grpc server (if used)
+    #   - "8081:8081"
+    #   # Needed for the playground (Do not enable in prod!)
+    #   - "3000:3000"
     depends_on:
       openfga-migrate:
         condition: service_completed_successfully

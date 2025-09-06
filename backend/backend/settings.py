@@ -17,7 +17,7 @@ SECRET_KEY = getenv("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = getenv("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["api.localhost"]
 
 
 # Application definition
@@ -61,8 +61,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-
-CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https') 
+CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "https://api.localhost"]
 CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = "backend.urls"

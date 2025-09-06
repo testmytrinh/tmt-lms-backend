@@ -1,0 +1,11 @@
+lms.anhnuive.id.vn {
+    reverse_proxy host.docker.internal:5173
+}
+
+http://api.localhost {
+    reverse_proxy lms-backend:8000
+}
+
+http://fga.localhost {
+    reverse_proxy openfga:8080
+}
