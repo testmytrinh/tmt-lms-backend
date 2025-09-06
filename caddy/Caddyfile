@@ -1,4 +1,4 @@
-lms.anhnuive.id.vn {
+http://lms.localhost {
     reverse_proxy host.docker.internal:5173
 }
 

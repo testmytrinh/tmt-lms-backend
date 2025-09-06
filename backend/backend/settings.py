@@ -62,7 +62,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https') 
-CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "https://api.localhost"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://api.localhost", "http://lms.localhost"]
 CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = "backend.urls"
