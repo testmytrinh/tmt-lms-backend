@@ -1,5 +1,4 @@
-from rest_framework.response import Response
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import (
     AllowAny,
@@ -7,49 +6,41 @@ from rest_framework.permissions import (
     DjangoModelPermissions,
 )
 
-from . import queries
-from .models import (
-    CourseTemplate,
-    Module,
-    Enrollment,
-    Lesson,
-    StudyGroup,
-)
-from .permissions import UserCanEditClass, UserCanViewClass
+from . import pagination, queries
+
+from .permissions import UserCanEditCourseClass
 from .serializers import (
     CourseSerializer,
     CourseCategorySerializer,
     CourseClassReadSerializer,
     CourseClassWriteSerializer,
-    CourseTemplateSerializer,
-    ModuleSerializer,
-    EnrollmentSerializer,
-    LessonSerializer,
-    StudyGroupSerializer,
 )
 
 
 class CourseViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
     viewsets.GenericViewSet,
-    viewsets.mixins.ListModelMixin,
-    viewsets.mixins.RetrieveModelMixin,
 ):
     permission_classes = [AllowAny]
     queryset = queries.get_all_courses()
     serializer_class = CourseSerializer
+    pagination_class = pagination.LargeResultsSetPagination
 
 
 class CourseCategoryViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
     viewsets.GenericViewSet,
-    viewsets.mixins.ListModelMixin,
-    viewsets.mixins.RetrieveModelMixin,
 ):
     permission_classes = [AllowAny]
     queryset = queries.get_all_course_categories()
     serializer_class = CourseCategorySerializer
+    pagination_class = pagination.LargeResultsSetPagination
 
 
 class CourseClassViewSet(viewsets.ModelViewSet):
+    pagination_class = pagination.StandardResultsSetPagination
     QUERYSET_MAP = {
         "list": lambda req: queries.get_active_open_classes(),
         "retrieve": lambda req: queries.get_visible_classes(req.user),
@@ -62,10 +53,11 @@ class CourseClassViewSet(viewsets.ModelViewSet):
         "list": [AllowAny],
         "retrieve": [AllowAny],
         "create": [DjangoModelPermissions],
-        "update": [IsAuthenticated, DjangoModelPermissions | UserCanEditClass],
+        "update": [IsAuthenticated, DjangoModelPermissions, UserCanEditCourseClass],
         "partial_update": [
             IsAuthenticated,
-            DjangoModelPermissions | UserCanEditClass,
+            DjangoModelPermissions,
+            UserCanEditCourseClass,
         ],
         "destroy": [IsAuthenticated, DjangoModelPermissions],
         "me": [IsAuthenticated],
@@ -95,34 +87,5 @@ class CourseClassViewSet(viewsets.ModelViewSet):
     def me(self, request):
         classes = self.get_queryset()
         page = self.paginate_queryset(classes)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(classes, many=True)
-        return Response(serializer.data)
-
-
-class CourseTemplateViewSet(viewsets.ModelViewSet):
-    queryset = CourseTemplate.objects.all()
-    serializer_class = CourseTemplateSerializer
-
-
-class ModuleViewSet(viewsets.ModelViewSet):
-    queryset = Module.objects.all()
-    serializer_class = ModuleSerializer
-
-
-class EnrollmentViewSet(viewsets.ModelViewSet):
-    queryset = Enrollment.objects.all()
-    serializer_class = EnrollmentSerializer
-
-
-class LessonViewSet(viewsets.ModelViewSet):
-    queryset = Lesson.objects.all()
-    serializer_class = LessonSerializer
-
-
-class StudyGroupViewSet(viewsets.ModelViewSet):
-    queryset = StudyGroup.objects.all()
-    serializer_class = StudyGroupSerializer
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)

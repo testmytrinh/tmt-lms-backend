@@ -2,18 +2,9 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 from user.serializers import UserReadSerializer
+from enrollment.models import EnrollmentRole
 
-from .models import (
-    Course,
-    CourseCategory,
-    CourseClass,
-    CourseTemplate,
-    Module,
-    Enrollment,
-    EnrollmentRole,
-    Lesson,
-    StudyGroup,
-)
+from .models import Course, CourseCategory, CourseClass
 
 User = get_user_model()
 
@@ -52,34 +43,4 @@ class CourseClassReadSerializer(serializers.ModelSerializer):
 class CourseClassWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseClass
-        fields = "__all__"
-
-
-class CourseTemplateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CourseTemplate
-        fields = "__all__"
-
-
-class ModuleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Module
-        fields = "__all__"
-
-
-class EnrollmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Enrollment
-        fields = "__all__"
-
-
-class LessonSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Lesson
-        fields = "__all__"
-
-
-class StudyGroupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = StudyGroup
         fields = "__all__"

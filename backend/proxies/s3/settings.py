@@ -1,0 +1,12 @@
+from os import getenv
+
+# AWS S3 Configuration
+AWS_ACCESS_KEY_ID = getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = getenv('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = getenv('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = getenv('AWS_S3_REGION_NAME', 'us-east-1')
+AWS_S3_CUSTOM_DOMAIN = getenv('AWS_S3_CUSTOM_DOMAIN')
+
+# File Storage Settings
+DEFAULT_USER_QUOTA_MB = int(getenv('DEFAULT_USER_QUOTA_MB', '1000'))  # 1GB
+MAX_FILE_SIZE_MB = int(getenv('MAX_FILE_SIZE_MB', '100'))  # 100MB

@@ -12,12 +12,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = getenv("DJANGO_SECRET_KEY")
+SECRET_KEY = getenv("DJANGO_SECRET_KEY", "change-this-in-production")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = getenv("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = ["api.localhost"]
+ALLOWED_HOSTS = ["api.localhost", 'localhost']
 
 
 # Application definition
@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     "seed",
     "institution",
     "courses",
+    "courseware",
+    "enrollment",
 ]
 
 MIDDLEWARE = [
@@ -61,8 +63,12 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https') 
-CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://api.localhost", "http://lms.localhost"]
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://api.localhost",
+    "http://lms.localhost",
+]
 CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = "backend.urls"

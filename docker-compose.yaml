@@ -38,6 +38,13 @@ x-backend-vars: &backend-vars
   OPENFGA_API_TOKEN: ${OPENFGA_API_TOKEN}
   OPENFGA_STORE_ID: ${OPENFGA_STORE_ID:?error}
 
+  # AWS S3 Configuration
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?error}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?error}
+  AWS_STORAGE_BUCKET_NAME: ${AWS_STORAGE_BUCKET_NAME:?error}
+  AWS_S3_REGION_NAME: ${AWS_S3_REGION_NAME:?-error}
+  AWS_S3_CUSTOM_DOMAIN: ${AWS_S3_CUSTOM_DOMAIN}
+
 x-backend-service: &backend-service
   image: lms-backend
   environment:
@@ -129,6 +136,8 @@ services:
   lms-backend:
     <<: *backend-service
     command: ["uv", "run", "manage.py", "runserver", "0.0.0.0:8000"]
+    ports:
+      - "8000:8000"
     depends_on:
       lms-db:
         condition: service_healthy
@@ -174,13 +183,13 @@ services:
   openfga:
     <<: *openfga
     command: run
-    # ports:
-    #   # Needed for the http server
-    #   - "8080:8080"
+    ports:
+      # Needed for the http server
+      - "8080:8080"
     #   # Needed for the grpc server (if used)
     #   - "8081:8081"
-    #   # Needed for the playground (Do not enable in prod!)
-    #   - "3000:3000"
+      # Needed for the playground (Do not enable in prod!)
+      - "3000:3000"
     depends_on:
       openfga-migrate:
         condition: service_completed_successfully

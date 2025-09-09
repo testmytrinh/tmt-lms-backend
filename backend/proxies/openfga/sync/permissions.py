@@ -1,8 +1,8 @@
 from rest_framework.permissions import BasePermission
-from openfga_sdk.client import ClientCheckRequest
 from abc import ABC, abstractmethod, ABCMeta
 
 from . import client
+from openfga_sdk.client.models import ClientCheckRequest
 
 BasePermissionMeta = type(BasePermission)
 
@@ -34,14 +34,10 @@ class FGABasePermission(BasePermission, ABC, metaclass=FGABasePermissionMeta):
         pass
 
     def has_object_permission(self, request, view, obj):
-        body = ClientCheckRequest(
-            user=f"{self.subject_type}:{self.get_subject_id(request, view, obj)}",
-            relation=self.relation,
-            object=f"{self.object_type}:{self.get_object_id(request, view, obj)}",
-        )
-        response = client.check(body)
-        print(response)
-        print(type(response))
-        print(response.allowed)
-        print(type(response.allowed))
-        return response.allowed
+        req = ClientCheckRequest(tuple_key={
+            "user": f"{self.subject_type}:{self.get_subject_id(request, view, obj)}",
+            "relation": self.relation,
+            "object": f"{self.object_type}:{self.get_object_id(request, view, obj)}",
+        })
+        resp = client.check(req)
+        return bool(getattr(resp, "allowed", False))

@@ -1,10 +1,11 @@
 from proxies.openfga.sync.permissions import FGABasePermission
-from proxies.openfga.relations import CourseClass, User
+from proxies.openfga.relations import CourseClassRelation, UserRelation
 
-class UserCanEditClass(FGABasePermission):
-    relation = CourseClass.CAN_EDIT
-    subject_type = User.TYPE
-    object_type = CourseClass.TYPE
+
+class UserCanEditCourseClass(FGABasePermission):
+    relation = CourseClassRelation.CAN_EDIT
+    subject_type = UserRelation.TYPE
+    object_type = CourseClassRelation.TYPE
 
     def get_subject_id(self, request, view, obj) -> str:
         return str(request.user.id)
@@ -12,10 +13,11 @@ class UserCanEditClass(FGABasePermission):
     def get_object_id(self, request, view, obj) -> str:
         return str(obj.id)
 
-class UserCanViewClass(FGABasePermission):
-    relation = CourseClass.CAN_VIEW
-    subject_type = User.TYPE
-    object_type = CourseClass.TYPE
+
+class UserCanViewCourseClass(FGABasePermission):
+    relation = CourseClassRelation.CAN_VIEW
+    subject_type = UserRelation.TYPE
+    object_type = CourseClassRelation.TYPE
 
     def get_subject_id(self, request, view, obj) -> str:
         return str(request.user.id)
