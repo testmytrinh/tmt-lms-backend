@@ -36,11 +36,9 @@ def create_course_class_open_for_guest_tuple(class_id):
 def sync_course_class_open_access(sender, instance: CourseClass, created, **kwargs):
     ofga_is_open = fga.check(
         ClientCheckRequest(
-            tuple=ClientTuple(
-                user=f"{UserRelation.TYPE}:*",
-                relation=CourseClassRelation.CAN_VIEW,
-                object=f"{CourseClassRelation.TYPE}:{instance.id}",
-            )
+            user=f"{UserRelation.TYPE}:*",
+            relation=CourseClassRelation.CAN_VIEW,
+            object=f"{CourseClassRelation.TYPE}:{instance.id}",
         )
     ).allowed
 
