@@ -9,7 +9,7 @@ User = get_user_model()
 class StudyGroup(models.Model):
     name = models.CharField(max_length=100)
     course_class = models.ForeignKey(
-        "CourseClass", on_delete=models.CASCADE, related_name="study_groups"
+        CourseClass, on_delete=models.CASCADE, related_name="study_groups"
     )
     description = models.TextField(blank=True, null=True)
 

@@ -16,11 +16,6 @@ from courses.views import (
     CourseViewSet,
     CourseCategoryViewSet,
     CourseClassViewSet,
-    CourseTemplateViewSet,
-    ModuleViewSet,
-    EnrollmentViewSet,
-    LessonViewSet,
-    StudyGroupViewSet,
 )
 
 router = DefaultRouter()
@@ -31,11 +26,11 @@ router.register(r"terms", TermViewSet, basename="term")
 router.register(r"courses", CourseViewSet, basename="course")
 router.register(r"categories", CourseCategoryViewSet, basename="course-category")
 router.register(r"classes", CourseClassViewSet, basename="course-class")
-router.register(r"templates", CourseTemplateViewSet, basename="course-template")
-router.register(r"modules", ModuleViewSet, basename="module")
-router.register(r"enrollments", EnrollmentViewSet, basename="enrollment")
-router.register(r"lessons", LessonViewSet, basename="lesson")
-router.register(r"study-groups", StudyGroupViewSet, basename="study-group")
+# router.register(r"templates", CourseTemplateViewSet, basename="course-template")
+# router.register(r"modules", ModuleViewSet, basename="module")
+# router.register(r"enrollments", EnrollmentViewSet, basename="enrollment")
+# router.register(r"lessons", LessonViewSet, basename="lesson")
+# router.register(r"study-groups", StudyGroupViewSet, basename="study-group")
 
 urlpatterns = [
     path("admin/", admin.site.urls),

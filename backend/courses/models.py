@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 
 from institution.models import Department, Term
+from courseware.models import CourseTemplate
 
 User = get_user_model()
 
@@ -52,7 +53,7 @@ class CourseClass(models.Model):
         related_name="course_classes",
     )
     course_template = models.ForeignKey(
-        "CourseTemplate",
+        CourseTemplate,
         blank=True,
         null=True,
         on_delete=models.PROTECT,

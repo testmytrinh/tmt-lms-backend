@@ -17,7 +17,7 @@ SECRET_KEY = getenv("DJANGO_SECRET_KEY", "change-this-in-production")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = getenv("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = ["api.localhost", 'localhost']
+ALLOWED_HOSTS = ["api.localhost", "localhost"]
 
 
 # Application definition
@@ -46,12 +46,13 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "user",
     "config",
-    "seed",
     "institution",
     "courses",
     "courseware",
     "enrollment",
 ]
+
+AUTH_USER_MODEL = "user.User"
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -109,7 +110,6 @@ DATABASES = {
     },
 }
 
-AUTH_USER_MODEL = "user.User"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
