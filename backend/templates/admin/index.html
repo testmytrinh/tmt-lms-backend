@@ -1,0 +1,190 @@
+{% extends 'admin/base.html' %}
+
+{% load i18n %}
+
+{% block title %}
+    {% if subtitle %}
+        {{ subtitle }} |
+    {% endif %}
+
+    {{ title }} | {{ site_title|default:_('Django site admin') }}
+{% endblock %}
+
+{% block branding %}
+    {% include "unfold/helpers/site_branding.html" %}
+{% endblock %}
+
+{% block content %}
+    <main
+      id="page-content"
+      class="dark:bg-neutral-900 mx-auto flex w-full flex-auto flex-col border-y-8 border-zinc-200/60 sm:max-w-2xl sm:rounded-xl sm:border-8 md:max-w-3xl lg:max-w-5xl xl:max-w-7xl"
+    >
+      <!-- Page Heading -->
+      <div class="container mx-auto px-4 pt-6 lg:px-8 lg:pt-8">
+        <div
+          class="flex flex-col gap-2 text-center sm:flex-row sm:items-center sm:justify-between sm:text-start"
+        >
+          <div class="grow">
+            <h1 class="mb-1 text-2xl font-bold">Dashboard</h1>
+            <h2 class="text-sm font-medium text-zinc-500">
+              Welcome, {{ user.email }}.
+            </h2>
+          </div>
+        </div>
+      </div>
+      <!-- END Page Heading -->
+
+      <!-- Page Section -->
+      <div class="container mx-auto p-4 lg:p-8 xl:max-w-7xl">
+        <div
+          class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8"
+        >
+          <!-- Quick Statistics -->
+          <a
+            href="/admin/courses/courseclass"
+            class="flex flex-col rounded-lg border border-zinc-200 dark:bg-neutral-700 hover:bg-zinc-50/50 active:border-purple-200 lg:col-span-3"
+          >
+            <div class="flex grow items-center justify-between p-5">
+              <dl>
+                <dt class="text-2xl font-bold">{{ sum_active_classes }}</dt>
+                <dd class="text-sm font-medium text-zinc-500">Active classes</dd>
+              </dl>
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Flowbite Icons by Themesberg - https://github.com/themesberg/flowbite-icons/blob/main/LICENSE --><path fill="currentColor" fill-rule="evenodd" d="M6 2a2 2 0 0 0-2 2v15a3 3 0 0 0 3 3h12a1 1 0 1 0 0-2h-2v-2h2a1 1 0 0 0 1-1V4a2 2 0 0 0-2-2h-8v16h5v2H7a1 1 0 1 1 0-2h1V2z" clip-rule="evenodd"/></svg>
+            </div>
+            <div
+              class="border-t border-zinc-100 px-5 py-3 text-xs font-medium text-emerald-500"
+            >
+              {{ sum_active_open_classes }} open classes
+            </div>
+          </a>
+          <a
+            href="/admin/user/user"
+            class="flex flex-col rounded-lg border border-zinc-200 hover:bg-zinc-50/50 active:border-purple-200 lg:col-span-3"
+          >
+            <div class="flex grow items-center justify-between p-5">
+              <dl>
+                <dt class="text-2xl font-bold">{{ sum_users }}</dt>
+                <dd class="text-sm font-medium text-zinc-500">Users</dd>
+              </dl>
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Flowbite Icons by Themesberg - https://github.com/themesberg/flowbite-icons/blob/main/LICENSE --><path fill="currentColor" fill-rule="evenodd" d="M12 4a4 4 0 1 0 0 8a4 4 0 0 0 0-8m-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4z" clip-rule="evenodd"/></svg>
+            </div>
+            <div
+              class="border-t border-zinc-100 px-5 py-3 text-xs font-medium text-orange-500"
+            >
+              {{ sum_active_users }} active users
+            </div>
+          </a>
+          <a
+            href="/admin/enrollments/enrollment"
+            class="flex flex-col rounded-lg border border-zinc-200 hover:bg-zinc-50/50 active:border-purple-200 lg:col-span-3"
+          >
+            <div class="flex grow items-center justify-between p-5">
+              <dl>
+                <dt class="text-2xl font-bold">{{ sum_enrollments }}</dt>
+                <dd class="text-sm font-medium text-zinc-500">
+                    Enrollments
+                </dd>
+              </dl>
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Flowbite Icons by Themesberg - https://github.com/themesberg/flowbite-icons/blob/main/LICENSE --><g fill="currentColor"><path d="M14 19V5h4a1 1 0 0 1 1 1v11h1a1 1 0 0 1 0 2z"/><path fill-rule="evenodd" d="M12 4.571a1 1 0 0 0-1.275-.961l-5 1.428A1 1 0 0 0 5 6v11H4a1 1 0 0 0 0 2h1.86l4.865 1.39A1 1 0 0 0 12 19.43zM10 11a1 1 0 0 1 1 1v.5a1 1 0 0 1-2 0V12a1 1 0 0 1 1-1" clip-rule="evenodd"/></g></svg>
+            </div>
+            <div
+              class="border-t border-zinc-100 px-5 py-3 text-xs font-medium text-pink-500"
+            >
+              {{ sum_new_enrollments_this_month }} new this month
+            </div>
+          </a>
+          <a
+            href="javascript:void(0)"
+            class="flex flex-col rounded-lg border border-zinc-200 hover:bg-zinc-50/50 active:border-purple-200 lg:col-span-3"
+          >
+            <div class="flex grow items-center justify-between p-5">
+              <dl>
+                <dt class="text-2xl font-bold">$356,67</dt>
+                <dd class="text-sm font-medium text-zinc-500">Wallet</dd>
+              </dl>
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Flowbite Icons by Themesberg - https://github.com/themesberg/flowbite-icons/blob/main/LICENSE --><g fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"><path d="M12 14a3 3 0 0 1 3-3h4a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-4a3 3 0 0 1-3-3m3-1a1 1 0 1 0 0 2h4v-2z"/><path d="M12.293 3.293a1 1 0 0 1 1.414 0L16.414 6h-2.828l-1.293-1.293a1 1 0 0 1 0-1.414M12.414 6L9.707 3.293a1 1 0 0 0-1.414 0L5.586 6zM4.586 7l-.056.055A2 2 0 0 0 3 9v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2h-4a5 5 0 0 1 0-10h4a2 2 0 0 0-1.53-1.945L17.414 7z"/></g></svg>
+            </div>
+            <div
+              class="border-t border-zinc-100 px-5 py-3 text-xs font-medium text-emerald-500"
+            >
+              Add more funds
+            </div>
+          </a>
+          <!-- END Quick Statistics -->
+
+          <!-- Charts -->
+          <a
+            href="javascript:void(0)"
+            class="flex flex-col overflow-hidden rounded-lg border border-zinc-200 hover:bg-zinc-50/50 active:border-purple-200 lg:col-span-4"
+          >
+            <dl class="px-6 pt-6">
+              <dt class="text-2xl font-bold">12%</dt>
+              <dd class="text-sm font-medium text-slate-500">
+                CPU (24 hrs)
+              </dd>
+            </dl>
+            <div class="-m-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 1600 900"
+                fill="currentColor"
+                class="w-auto text-purple-100"
+              >
+                <path
+                  d="M0 900h91.429V754q0-4-4-4H4q-4 0-4 4Zm114.286 0h91.428V604q0-4-4-4h-83.428q-4 0-4 4Zm114.285 0H320V154q0-4-4-4h-83.429q-4 0-4 4Zm114.286 0h91.429V304q0-4-4-4h-83.429q-4 0-4 4Zm114.286 0h91.428V754q0-4-4-4h-83.428q-4 0-4 4Zm114.286 0h91.428V754q0-4-4-4H575.43q-4 0-4 4Zm114.285 0h91.429V604q0-4-4-4h-83.429q-4 0-4 4ZM800 900h91.429V454q0-4-4-4H804q-4 0-4 4Zm114.286 0h91.428V604q0-4-4-4h-83.428q-4 0-4 4Zm114.285 0H1120V754q0-4-4-4h-83.429q-4 0-4 4Zm114.286 0h91.429V604q0-4-4-4h-83.429q-4 0-4 4Zm114.286 0h91.428V454q0-4-4-4h-83.428q-4 0-4 4Zm114.286 0h91.428V604q0-4-4-4h-83.428q-4 0-4 4Zm114.285 0h91.429V754q0-4-4-4h-83.429q-4 0-4 4Z"
+                />
+              </svg>
+            </div>
+          </a>
+          <a
+            href="javascript:void(0)"
+            class="flex flex-col overflow-hidden rounded-lg border border-zinc-200 hover:bg-zinc-50/50 active:border-purple-200 lg:col-span-4"
+          >
+            <dl class="px-6 pt-6">
+              <dt class="text-2xl font-bold">5.63 blocks/s</dt>
+              <dd class="text-sm font-medium text-slate-500">
+                Disk I/O (24 hrs)
+              </dd>
+            </dl>
+            <div class="-m-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 1600 900"
+                fill="currentColor"
+                class="w-auto text-purple-100"
+              >
+                <path
+                  d="M0 1000h114.286V785.78q0-4-4-4H4q-4 0-4 4Zm142.857 0h114.286V162.391q0-4-4-4H146.857q-4 0-4 4Zm142.857 0H400V331.99q0-4-4-4H289.714q-4 0-4 4Zm142.857 0h114.286V748.382q0-4-4-4H432.571q-4 0-4 4Zm142.858 0h114.285V800.545q0-4-4-4H575.43q-4 0-4 4Zm142.857 0H828.57V674.705q0-4-4-4H718.286q-4 0-4 4Zm142.857 0h114.286V326.274q0-4-4-4H861.143q-4 0-4 4Zm142.857 0h114.286V484.918q0-4-4-4H1004q-4 0-4 4Zm142.857 0h114.286V277.255q0-4-4-4h-106.286q-4 0-4 4Zm142.857 0H1400V729.966q0-4-4-4h-106.286q-4 0-4 4Zm142.857 0h114.286V370.221q0-4-4-4h-106.286q-4 0-4 4Zm142.858 0h114.285V270.449q0-4-4-4H1575.43q-4 0-4 4Zm142.857 0h114.285V779.167q0-4-4-4h-106.285q-4 0-4 4Zm142.857 0h114.286V513.723q0-4-4-4h-106.286q-4 0-4 4Z"
+                />
+              </svg>
+            </div>
+          </a>
+          <a
+            href="javascript:void(0)"
+            class="flex flex-col overflow-hidden rounded-lg border border-zinc-200 hover:bg-zinc-50/50 active:border-purple-200 sm:col-span-2 lg:col-span-4"
+          >
+            <dl class="px-6 pt-6">
+              <dt class="text-2xl font-bold">21.86 Kb/s</dt>
+              <dd class="text-sm font-medium text-slate-500">
+                Network — IPv4 (Public Out, 24 hrs)
+              </dd>
+            </dl>
+            <div class="-m-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 1600 900"
+                fill="currentColor"
+                class="w-auto text-purple-100"
+              >
+                <path
+                  d="M0 1000h114.286V192.127q0-4-4-4H4q-4 0-4 4Zm142.857 0h114.286V344.652q0-4-4-4H146.857q-4 0-4 4Zm142.857 0H400V471.35q0-4-4-4H289.714q-4 0-4 4Zm142.857 0h114.286V682.95q0-4-4-4H432.571q-4 0-4 4Zm142.858 0h114.285V503.005q0-4-4-4H575.43q-4 0-4 4Zm142.857 0H828.57V548.415q0-4-4-4H718.286q-4 0-4 4Zm142.857 0h114.286V774.679q0-4-4-4H861.143q-4 0-4 4Zm142.857 0h114.286V129.482q0-4-4-4H1004q-4 0-4 4Zm142.857 0h114.286V640.862q0-4-4-4h-106.286q-4 0-4 4Zm142.857 0H1400V465.367q0-4-4-4h-106.286q-4 0-4 4Zm142.857 0h114.286V604.912q0-4-4-4h-106.286q-4 0-4 4Zm142.858 0h114.285V595.61q0-4-4-4H1575.43q-4 0-4 4Zm142.857 0h114.285V125.72q0-4-4-4h-106.285q-4 0-4 4Zm142.857 0h114.286V319.097q0-4-4-4h-106.286q-4 0-4 4Z"
+                />
+              </svg>
+            </div>
+          </a>
+          <!-- END Charts -->
+        </div>
+      </div>
+      <!-- END Page Section -->
+    </main>
+{% endblock %}

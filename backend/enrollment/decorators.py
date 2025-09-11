@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def handle_template_presave_syncing_exceptions(func):
+def handle_enrollment_presave_syncing_exceptions(func):
     @functools.wraps(func)
     def wrapper(sender, instance, raw, using, update_fields, **kwargs):
         try:
@@ -12,7 +12,7 @@ def handle_template_presave_syncing_exceptions(func):
         except Exception as e:
             logger.error(
                 f"An exception occurred in signal '{func.__name__}' "
-                f"for template '{instance.title}' (ID: {instance.id}):\n"
+                f"for enrollment '{instance.user.email}' (ID: {instance.id}, {instance.get_role_display()}):\n"
                 f"{e}",
                 exc_info=True,
             )
@@ -21,7 +21,7 @@ def handle_template_presave_syncing_exceptions(func):
 
     return wrapper
 
-def handle_template_postsave_syncing_exceptions(func):
+def handle_enrollment_postsave_syncing_exceptions(func):
     @functools.wraps(func)
     def wrapper(sender, instance, created, **kwargs):
         try:
@@ -29,24 +29,7 @@ def handle_template_postsave_syncing_exceptions(func):
         except Exception as e:
             logger.error(
                 f"An exception occurred in signal '{func.__name__}' "
-                f"for template '{instance.title}' (ID: {instance.id}):\n"
-                f"{e}",
-                exc_info=True,
-            )
-            # Re-raise the exception to prevent silent failures
-            raise
-
-    return wrapper
-
-def handle_node_postsave_syncing_exceptions(func):
-    @functools.wraps(func)
-    def wrapper(sender, instance, created, **kwargs):
-        try:
-            return func(sender, instance, created, **kwargs)
-        except Exception as e:
-            logger.error(
-                f"An exception occurred in signal '{func.__name__}' "
-                f"for node ID: {instance.id} ({instance}):\n"
+                f"for enrollment '{instance.user.email}' (ID: {instance.id}, {instance.get_role_display()}):\n"
                 f"{e}",
                 exc_info=True,
             )

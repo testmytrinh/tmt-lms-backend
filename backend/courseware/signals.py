@@ -1,92 +1,68 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
-from openfga_sdk.models.fga_object import FgaObject
-from openfga_sdk.client.models import ClientTuple, ClientWriteRequest
-from openfga_sdk.client.models.list_users_request import (
-    ClientListUsersRequest,
-    UserTypeFilter,
-)
-from openfga_sdk import ReadRequestTupleKey
 import logging
 
-from proxies.openfga.sync import client as fga
+from proxies.openfga.sync.utils import sync_subjects, delete_all_subject_tuples
 from proxies.openfga.relations import (
     CourseTemplateRelation,
     UserRelation,
+    TemplateNodeRelation,
 )
 
 from .decorators import handle_template_postsave_syncing_exceptions
-from .models import CourseTemplate
+from .models import CourseTemplate, TemplateNode
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
-def create_template_owner_tuple(template_id, owner_id):
-    return ClientTuple(
-        user=f"{UserRelation.TYPE}:{owner_id}",
-        relation=CourseTemplateRelation.OWNER,
-        object=f"{CourseTemplateRelation.TYPE}:{template_id}",
-    )
-
-
 @receiver(post_save, sender=CourseTemplate)
 @handle_template_postsave_syncing_exceptions
 def sync_template_ownership(sender, instance, created, **kwargs):
-    """Sync course template ownership to OpenFGA"""
-    ofga_template_owners = ClientListUsersRequest(
-        object=FgaObject(type=CourseTemplateRelation.TYPE, id=str(instance.id)),
+    return sync_subjects(
+        object_key=f"{CourseTemplateRelation.TYPE}:{instance.id}",
+        subject_type=UserRelation.TYPE,
         relation=CourseTemplateRelation.OWNER,
-        user_filters=[UserTypeFilter(type=UserRelation.TYPE)],
-    ).users
+        desired_subject_ids=set([str(instance.owner.id)]) if instance.owner else set(),
+    )
 
-    # I gotta convert these into sets cuz ofga returns list
-    ofga_template_owner_ids = set(int(user.id) for user in ofga_template_owners)
-    owner_id = set([int(instance.id)])
 
-    to_add = owner_id - ofga_template_owner_ids
-    to_del = ofga_template_owner_ids - owner_id
+@receiver(post_save, sender=TemplateNode)
+@handle_template_postsave_syncing_exceptions
+def sync_node_template(sender, instance: TemplateNode, created, **kwargs):
+    return sync_subjects(
+        object_key=f"{TemplateNodeRelation.TYPE}:{instance.id}",
+        subject_type=CourseTemplateRelation.TYPE,
+        relation=TemplateNodeRelation.TEMPLATE,
+        desired_subject_ids=set([str(instance.course_template.id)])
+        if instance.course_template
+        else set(),
+    )
 
-    payload = {}
-    if to_add:
-        payload["writes"] = [
-            create_template_owner_tuple(instance.id, uid) for uid in to_add
-        ]
-    if to_del:
-        payload["deletes"] = [
-            create_template_owner_tuple(instance.id, uid) for uid in to_del
-        ]
-    if not payload:
-        return
-    return fga.write(ClientWriteRequest(**payload))
+
+@receiver(post_save, sender=TemplateNode)
+@handle_template_postsave_syncing_exceptions
+def sync_node_parent(sender, instance: TemplateNode, created, **kwargs):
+    return sync_subjects(
+        object_key=f"{TemplateNodeRelation.TYPE}:{instance.id}",
+        subject_type=TemplateNodeRelation.TYPE,
+        relation=TemplateNodeRelation.PARENT_NODE,
+        desired_subject_ids=set([str(instance.parent.id)])
+        if instance.parent
+        else set(),
+    )
 
 
 @receiver(post_delete, sender=CourseTemplate)
-def remove_template_from_openfga(sender, instance, **kwargs):
-    """Remove template permissions from OpenFGA when deleted"""
-    try:
-        if instance.owner:
-            # Read all tuples for this template and delete them
-            read_response = fga.read(
-                ReadRequestTupleKey(
-                    object=f"{CourseTemplateRelation.TYPE}:{instance.id}"
-                )
-            )
-            tuples_to_delete = []
+def cleanup_course_template_relations(sender, instance: CourseTemplate, **kwargs):
+    return delete_all_subject_tuples(
+        object_key=f"{CourseTemplateRelation.TYPE}:{instance.id}"
+    )
 
-            for tuple_obj in read_response.tuples:
-                key = tuple_obj.key
-                tuples_to_delete.append(
-                    ClientTuple(user=key.user, relation=key.relation, object=key.object)
-                )
 
-            if tuples_to_delete:
-                fga.write(ClientWriteRequest(deletes=tuples_to_delete))
-                logger.info(
-                    f"Removed {len(tuples_to_delete)} template permissions from OpenFGA"
-                )
-            else:
-                logger.info("No template permissions found to remove from OpenFGA")
-    except Exception as e:
-        logger.error(f"Error removing template permissions from OpenFGA: {e}")
+@receiver(post_delete, sender=TemplateNode)
+def cleanup_template_node_relations(sender, instance: TemplateNode, **kwargs):
+    return delete_all_subject_tuples(
+        object_key=f"{TemplateNodeRelation.TYPE}:{instance.id}"
+    )

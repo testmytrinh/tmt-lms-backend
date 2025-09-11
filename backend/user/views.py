@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from rest_framework.decorators import action
 from rest_framework.permissions import (
     AllowAny,
@@ -24,8 +23,7 @@ from .serializers import (
     UserUpdateSerializer,
 )
 
-User = get_user_model()
-
+from . import queries
 
 class CookieTokenObtainPairView(TokenObtainPairView):
     def finalize_response(self, request, response, *args, **kwargs):
@@ -70,7 +68,7 @@ class CookieTokenBlacklistView(TokenBlacklistView):
 
 
 class UserViewSet(ModelViewSet):
-    queryset = User.objects.all()
+    queryset = queries.get_all_users()
 
     def get_serializer_class(self):
         SERIALIZER_MAP = {

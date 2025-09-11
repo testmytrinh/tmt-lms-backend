@@ -3,6 +3,7 @@ from os import getenv
 import os
 from pathlib import Path
 from django.templatetags.static import static
+from django.urls import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -77,7 +78,7 @@ ROOT_URLCONF = "backend.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -156,6 +157,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")  # for collectstatic
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+FIXTURE_DIRS = (os.path.join(BASE_DIR, "fixtures"),)
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -207,6 +209,7 @@ UNFOLD = {
             "href": lambda request: static("favicon.svg"),
         },
     ],
+    "DASHBOARD_CALLBACK": "backend.admin.dashboard_callback",
 }
 
 CRISPY_TEMPLATE_PACK = "unfold_crispy"
