@@ -1,4 +1,5 @@
 from openfga_sdk import ReadRequestTupleKey
+from openfga_sdk.client.models import ClientListRelationsRequest
 from openfga_sdk.client.models import (
     ClientWriteRequest,
     ClientTuple,
@@ -181,3 +182,15 @@ def delete_all_object_tuples(subject_key: str, object_type: str):
     ]
     if to_delete:
         return client.write(ClientWriteRequest(deletes=to_delete))
+
+
+def list_allowed_relations(
+    subject_key: str, object_key: str, relations: list[str]
+) -> list[str]:
+    if not subject_key or not object_key or not relations:
+        raise ValueError("subject_key, object_key and relations are required")
+
+    body = ClientListRelationsRequest(
+        user=subject_key, object=object_key, relations=relations
+    )
+    return client.list_relations(body)

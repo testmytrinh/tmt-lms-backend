@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 
-from .models import Department, Term
+from . import queries
 from .serializers import DepartmentSerializer, TermSerializer
 
 
@@ -10,7 +10,7 @@ class DepartmentViewSet(
     viewsets.mixins.RetrieveModelMixin,
 ):
     serializer_class = DepartmentSerializer
-    queryset = Department.objects.all()
+    queryset = queries.get_all_departments()
 
 
 class TermViewSet(
@@ -19,4 +19,4 @@ class TermViewSet(
     viewsets.mixins.RetrieveModelMixin,
 ):
     serializer_class = TermSerializer
-    queryset = Term.objects.all()
+    queryset = queries.get_all_terms()

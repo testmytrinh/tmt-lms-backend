@@ -16,8 +16,10 @@ def get_all_courses():
 def get_all_classes():
     return CourseClass.objects.all()
 
+
 def get_active_classes():
     return CourseClass.objects.filter(is_active=True)
+
 
 def get_active_open_classes():
     return CourseClass.objects.filter(is_active=True, is_open=True)
@@ -40,3 +42,7 @@ def get_user_classes(user):
 
 def get_no_classes():
     return CourseClass.objects.none()
+
+
+def get_course_class(class_id):
+    return CourseClass.objects.get(pk=class_id)

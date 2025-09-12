@@ -1,10 +1,13 @@
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, status
+from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import (
     AllowAny,
     IsAuthenticated,
     DjangoModelPermissions,
 )
+
+from enrollment.serializers import EnrollmentReadSerializer
 
 from . import pagination, queries
 
@@ -48,6 +51,7 @@ class CourseClassViewSet(viewsets.ModelViewSet):
         "partial_update": lambda req: queries.get_all_classes(),
         "destroy": lambda req: queries.get_all_classes(),
         "me": lambda req: queries.get_user_classes(req.user),
+        "my_enrollment": lambda req: queries.get_visible_classes(req.user),
     }
     PERMISSION_MAP = {
         "list": [AllowAny],
@@ -61,6 +65,7 @@ class CourseClassViewSet(viewsets.ModelViewSet):
         ],
         "destroy": [IsAuthenticated, DjangoModelPermissions],
         "me": [IsAuthenticated],
+        "my_enrollment": [IsAuthenticated],
     }
     SERIALIZER_MAP = {
         "list": CourseClassReadSerializer,
@@ -70,6 +75,7 @@ class CourseClassViewSet(viewsets.ModelViewSet):
         "partial_update": CourseClassWriteSerializer,
         "destroy": CourseClassWriteSerializer,
         "me": CourseClassReadSerializer,
+        "my_enrollment": EnrollmentReadSerializer,
     }
 
     def get_queryset(self):
@@ -89,3 +95,10 @@ class CourseClassViewSet(viewsets.ModelViewSet):
         page = self.paginate_queryset(classes)
         serializer = self.get_serializer(page, many=True)
         return self.get_paginated_response(serializer.data)
+
+    @action(detail=True, methods=["get"], url_path="my-enrollment")
+    def my_enrollment(self, request, pk=None):
+        enrollment = self.get_object().enrollments.get(user=request.user)
+        return Response(
+            data=self.get_serializer(enrollment).data, status=status.HTTP_200_OK
+        )

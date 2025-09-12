@@ -3,7 +3,6 @@ from os import getenv
 import os
 from pathlib import Path
 from django.templatetags.static import static
-from django.urls import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -169,7 +168,7 @@ REST_FRAMEWORK = {
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.OrderingFilter",
     ],
-    # "EXCEPTION_HANDLER": "utils.response.custom_exception_handler",
+    "EXCEPTION_HANDLER": "backend.middlewares.custom_exception_handler",
     "PAGE_SIZE": 10,
     #'DEFAULT_THROTTLE_CLASSES': [
     #    'rest_framework.throttling.AnonRateThrottle',

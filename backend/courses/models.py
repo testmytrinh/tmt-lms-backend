@@ -64,4 +64,4 @@ class CourseClass(models.Model):
         verbose_name_plural = "Course Classes"
 
     def __str__(self):
-        return f"{self.name} - {self.course.name}"
+        return f"[{self.id}] {self.name} - {self.course.name}"

@@ -1,12 +1,9 @@
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
 
 from user.serializers import UserReadSerializer
 from enrollment.models import EnrollmentRole
 
 from .models import Course, CourseCategory, CourseClass
-
-User = get_user_model()
 
 
 class CourseSerializer(serializers.ModelSerializer):

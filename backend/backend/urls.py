@@ -17,6 +17,9 @@ from courses.views import (
     CourseCategoryViewSet,
     CourseClassViewSet,
 )
+from enrollment.views import (
+    EnrollmentViewSet,
+)
 
 router = DefaultRouter()
 
@@ -28,7 +31,7 @@ router.register(r"categories", CourseCategoryViewSet, basename="course-category"
 router.register(r"classes", CourseClassViewSet, basename="course-class")
 # router.register(r"templates", CourseTemplateViewSet, basename="course-template")
 # router.register(r"modules", ModuleViewSet, basename="module")
-# router.register(r"enrollments", EnrollmentViewSet, basename="enrollment")
+router.register(r"enrollments", EnrollmentViewSet, basename="enrollment")
 # router.register(r"lessons", LessonViewSet, basename="lesson")
 # router.register(r"study-groups", StudyGroupViewSet, basename="study-group")
 

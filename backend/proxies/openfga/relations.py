@@ -24,6 +24,16 @@ class CourseClassRelation(StrEnum):
     CAN_EDIT = "can_edit"
     CAN_VIEW = "can_view"
 
+    @staticmethod
+    def get_all_relations():
+        return [
+            CourseClassRelation.TEACHER,
+            CourseClassRelation.STUDENT,
+            CourseClassRelation.GUEST,
+            CourseClassRelation.CAN_EDIT,
+            CourseClassRelation.CAN_VIEW,
+        ]
+
 
 class CourseTemplateRelation(StrEnum):
     """Course Template object type and relations"""

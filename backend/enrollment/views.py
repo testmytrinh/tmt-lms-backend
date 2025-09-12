@@ -1,17 +1,44 @@
-from rest_framework import status, viewsets
-from rest_framework.decorators import action
-from rest_framework.response import Response
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 
-
-from .models import Enrollment, StudyGroup
-from .serializers import EnrollmentSerializer, StudyGroupSerializer
+from .pagination import StandardResultsSetPagination
+from .queries import get_all_enrollments
+from .serializers import EnrollmentReadSerializer, EnrollmentWriteSerializer
 
 
 class EnrollmentViewSet(viewsets.ModelViewSet):
-    queryset = Enrollment.objects.all()
-    serializer_class = EnrollmentSerializer
+    pagination_class = StandardResultsSetPagination
+    QUERYSET_MAP = {
+        "list": lambda req: get_all_enrollments(),
+        "retrieve": lambda req: get_all_enrollments(),
+        "create": lambda req: get_all_enrollments(),
+        "update": lambda req: get_all_enrollments(),
+        "partial_update": lambda req: get_all_enrollments(),
+        "destroy": lambda req: get_all_enrollments(),
+    }
+    PERMISSION_MAP = {
+        "list": [IsAuthenticated],
+        "retrieve": [IsAuthenticated],
+        "create": [IsAuthenticated],
+        "update": [IsAuthenticated, DjangoModelPermissions],
+        "partial_update": [IsAuthenticated, DjangoModelPermissions],
+        "destroy": [IsAuthenticated, DjangoModelPermissions],
+    }
+    SERIALIZER_MAP = {
+        "list": EnrollmentReadSerializer,
+        "retrieve": EnrollmentReadSerializer,
+        "create": EnrollmentWriteSerializer,
+        "update": EnrollmentWriteSerializer,
+        "partial_update": EnrollmentWriteSerializer,
+        "destroy": EnrollmentWriteSerializer,
+    }
 
+    def get_queryset(self):
+        return self.QUERYSET_MAP[self.action](self.request)
 
-class StudyGroupViewSet(viewsets.ModelViewSet):
-    queryset = StudyGroup.objects.all()
-    serializer_class = StudyGroupSerializer
+    def get_permissions(self):
+        permission_classes = self.PERMISSION_MAP[self.action]
+        return [permission() for permission in permission_classes]
+
+    def get_serializer_class(self):
+        return self.SERIALIZER_MAP[self.action]
