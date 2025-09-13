@@ -45,11 +45,11 @@ class CourseCategoryViewSet(
 class CourseClassViewSet(viewsets.ModelViewSet):
     pagination_class = pagination.StandardResultsSetPagination
     QUERYSET_MAP = {
-        "list": lambda req: queries.get_active_open_classes(),
+        "list": lambda _: queries.get_active_open_classes(),
         "retrieve": lambda req: queries.get_visible_classes(req.user),
-        "update": lambda req: queries.get_all_classes(),
-        "partial_update": lambda req: queries.get_all_classes(),
-        "destroy": lambda req: queries.get_all_classes(),
+        "update": lambda _: queries.get_all_classes(),
+        "partial_update": lambda _: queries.get_all_classes(),
+        "destroy": lambda _: queries.get_all_classes(),
         "me": lambda req: queries.get_user_classes(req.user),
         "my_enrollment": lambda req: queries.get_visible_classes(req.user),
     }

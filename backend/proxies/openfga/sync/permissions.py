@@ -6,8 +6,10 @@ from openfga_sdk.client.models import ClientCheckRequest
 
 BasePermissionMeta = type(BasePermission)
 
+
 class FGABasePermissionMeta(ABCMeta, BasePermissionMeta):
     pass
+
 
 class FGABasePermission(BasePermission, ABC, metaclass=FGABasePermissionMeta):
     @property
@@ -33,11 +35,20 @@ class FGABasePermission(BasePermission, ABC, metaclass=FGABasePermissionMeta):
     def get_object_id(self, request, view, obj) -> str:
         pass
 
+    @staticmethod
+    def check(subject_key: str, relation: str, object_key: str) -> bool:
+        return client.check(
+            ClientCheckRequest(
+                user=subject_key,
+                relation=relation,
+                object=object_key,
+            )
+        ).allowed
+
     def has_object_permission(self, request, view, obj):
-        req = ClientCheckRequest(tuple_key={
-            "user": f"{self.subject_type}:{self.get_subject_id(request, view, obj)}",
-            "relation": self.relation,
-            "object": f"{self.object_type}:{self.get_object_id(request, view, obj)}",
-        })
-        resp = client.check(req)
-        return bool(getattr(resp, "allowed", False))
+        print(request, view, obj)
+        return FGABasePermission.check(
+            subject_key=f"{self.subject_type}:{self.get_subject_id(request, view, obj)}",
+            relation=self.relation,
+            object_key=f"{self.object_type}:{self.get_object_id(request, view, obj)}",
+        )

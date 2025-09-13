@@ -20,6 +20,12 @@ from courses.views import (
 from enrollment.views import (
     EnrollmentViewSet,
 )
+from courseware.views import (
+    CourseTemplateViewSet,
+    TemplateNodeViewSet,
+    ModuleViewSet,
+    LessonViewSet,
+)
 
 router = DefaultRouter()
 
@@ -29,11 +35,16 @@ router.register(r"terms", TermViewSet, basename="term")
 router.register(r"courses", CourseViewSet, basename="course")
 router.register(r"categories", CourseCategoryViewSet, basename="course-category")
 router.register(r"classes", CourseClassViewSet, basename="course-class")
-# router.register(r"templates", CourseTemplateViewSet, basename="course-template")
-# router.register(r"modules", ModuleViewSet, basename="module")
 router.register(r"enrollments", EnrollmentViewSet, basename="enrollment")
-# router.register(r"lessons", LessonViewSet, basename="lesson")
-# router.register(r"study-groups", StudyGroupViewSet, basename="study-group")
+router.register(r"templates", CourseTemplateViewSet, basename="course-template")
+router.register(
+    r"templates/(?P<template_id>\d+)/nodes",
+    TemplateNodeViewSet,
+    basename="template-node",
+)
+router.register(r"modules", ModuleViewSet, basename="module")
+router.register(r"lessons", LessonViewSet, basename="lesson")
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
