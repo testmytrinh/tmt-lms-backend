@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.contrib.contenttypes.models import ContentType
 
 from user.serializers import UserReadSerializer
 
@@ -59,6 +60,11 @@ class TemplateNodeDetailSerializer(serializers.ModelSerializer):
 
 
 class TemplateNodeWriteSerializer(serializers.ModelSerializer):
+    content_type = serializers.SlugRelatedField(
+        slug_field="model",  # or use "id"
+        queryset=ContentType.objects.all(),
+    )
+
     class Meta:
         model = TemplateNode
         fields = "__all__"

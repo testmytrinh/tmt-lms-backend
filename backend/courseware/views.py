@@ -88,6 +88,7 @@ class CourseTemplateViewSet(viewsets.ModelViewSet):
 
 class TemplateNodeViewSet(viewsets.ModelViewSet):
     QUERYSET_MAP = {
+        "create": lambda template_id: queries.get_nodes_by_template_id(template_id),
         "list": lambda template_id: queries.get_nodes_by_template_id(template_id),
         "retrieve": lambda template_id: queries.get_nodes_by_template_id(template_id),
         "update": lambda template_id: queries.get_nodes_by_template_id(template_id),

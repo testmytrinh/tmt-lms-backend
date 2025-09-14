@@ -83,7 +83,7 @@ class Module(models.Model):
 
 class Lesson(models.Model):
     title = models.CharField(max_length=200)
-    content = models.TextField()
+    content = models.TextField(blank=True)
 
     def __str__(self):
         return f"{self.title}"
