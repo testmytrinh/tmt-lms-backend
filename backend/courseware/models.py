@@ -87,3 +87,67 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f"{self.title}"
+
+
+class CodingQuestion(models.Model):
+    name = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    class_id = models.ForeignKey(
+        CourseTemplate,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="coding_questions",
+    )
+    description = models.TextField(blank=True)
+    hidden = models.BooleanField(default=False)
+    returnable_forced = models.BooleanField(default=False)
+    checksum = models.CharField(max_length=255, blank=True)
+    has_tests = models.BooleanField(default=False)
+    runtime_params = models.CharField(max_length=500, blank=True)
+    code_review_requests_enabled = models.BooleanField(default=False)
+    soft_deadline_spec = models.TextField(blank=True)
+    hide_submission_results = models.BooleanField(default=False)
+    memory_limit_gb = models.IntegerField(null=True, blank=True)
+    cpu_limit = models.IntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class TestCase(models.Model):
+    coding_question = models.ForeignKey(
+        CodingQuestion, on_delete=models.CASCADE, related_name="test_cases"
+    )
+    input_data = models.TextField()
+    expected_output = models.TextField()
+    is_hidden = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0)
+    timeout = models.FloatField(default=2.0)  # seconds
+
+
+class SupportedLanguage(models.Model):
+    name = models.CharField(max_length=50)
+    version = models.CharField(max_length=50, blank=True, null=True)
+
+
+class Submission(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    coding_question = models.ForeignKey(CodingQuestion, on_delete=models.CASCADE)
+    language = models.ForeignKey(SupportedLanguage, on_delete=models.CASCADE)
+    code = models.TextField()
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ("pending", "Pending"),
+            ("running", "Running"),
+            ("accepted", "Accepted"),
+            ("wrong_answer", "Wrong Answer"),
+            ("time_limit", "Time Limit Exceeded"),
+            ("runtime_error", "Runtime Error"),
+        ],
+        default="pending",
+    )
+    result = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
