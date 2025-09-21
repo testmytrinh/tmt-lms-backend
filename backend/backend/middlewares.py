@@ -14,7 +14,7 @@ _EXCEPTION_MAPPING = {
         "message": "Invalid input.",
     },
     PermissionError: {
-        "status_code": status.HTTP_400_BAD_REQUEST,
+        "status_code": status.HTTP_403_FORBIDDEN,
         "message": "Permission denied.",
     },
     ClientError: {
@@ -31,39 +31,34 @@ _EXCEPTION_MAPPING = {
 # https://www.django-rest-framework.org/api-guide/exceptions/#custom-exception-handling
 def custom_exception_handler(exc, context):
     # Call REST framework's default exception handler first
-    response = exception_handler(exc, context)
+    if optional_response := exception_handler(exc, context):
+        return optional_response
 
     # Get request details for logging
     request = context.get("request")
     view = context.get("view")
-    view_name = view.__class__.__name__ if view else "Unknown"
-
-    # Log the exception with context
-    logger.error(
-        f"\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\nException in {view_name}: {exc}",
-        exc_info=True,
-        extra={"path": request.path if request else "Unknown"},
-    )
-    logger.error("======================================\n\n")
-
-    # If DRF already handled it, format the response consistently
-    if response is not None:
-        return response
+    view_name = view.__class__.__name__ if view else "Unknown View"
 
     # For unhandled exceptions, check our mapping
-    for exception_class in _EXCEPTION_MAPPING:
-        if isinstance(exc, exception_class):
-            message = (
-                str(exc) if str(exc) else _EXCEPTION_MAPPING[exception_class]["message"]
-            )
-            return Response(
-                {"detail": message},
-                status=_EXCEPTION_MAPPING[exception_class]["status_code"],
-            )
+    exception_class = next(
+        (clz for clz in _EXCEPTION_MAPPING if isinstance(exc, clz)), None
+    )
 
-    # If we got here, it's a truly unexpected exception
-    logger.critical(f"Unhandled exception: {exc}", exc_info=True)
+    if not exception_class:
+        # Log the exception with context
+        logger.error(
+            f"\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Unhandled exception ({type(exception_class).__name__}) in {view_name}: {exc}",
+            exc_info=True,
+            extra={"path": request.path if request else "Unknown Path"},
+        )
+        logger.error("======================================\n\n")
+        return Response(
+            {"detail": "An unexpected error occurred."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    # Handle known exceptions
     return Response(
-        {"detail": "An unexpected error occurred."},
-        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        {"detail": str(exc) or _EXCEPTION_MAPPING[exception_class]["message"]},
+        status=_EXCEPTION_MAPPING[exception_class]["status_code"],
     )

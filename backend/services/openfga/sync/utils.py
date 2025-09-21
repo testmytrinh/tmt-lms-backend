@@ -11,7 +11,7 @@ from . import client
 
 
 def sync_single_type_subjects(
-    object_key, subject_type, relation, desired_subject_ids: set[int]
+    object_key, subject_type, relation, desired_subject_ids: set[str]
 ):
     # Note: the result might contain subjects of other types
     existing_subject_tuples: list[Tuple] = client.read(
@@ -22,8 +22,8 @@ def sync_single_type_subjects(
     ).tuples
     # Filter only subjects of the correct type
     subject_prefix = f"{subject_type}:"
-    existing_subject_ids: set[int] = set(
-        int(t.key.user.removeprefix(subject_prefix))
+    existing_subject_ids: set[str] = set(
+        t.key.user.removeprefix(subject_prefix)
         for t in existing_subject_tuples
         if t.key.user.startswith(subject_prefix)
     )
@@ -49,7 +49,7 @@ def sync_single_type_subjects(
 
 
 def sync_single_type_objects(
-    subject_key, object_type, relation, desired_object_ids: set[int]
+    subject_key, object_type, relation, desired_object_ids: set[str]
 ):
     # Note: the result might contain objects of other types
     existing_object_tuples: list[Tuple] = client.read(
@@ -61,8 +61,8 @@ def sync_single_type_objects(
     ).tuples
     # Filter only objects of the correct type
     object_prefix = f"{object_type}:"
-    existing_object_ids: set[int] = set(
-        int(t.key.object.removeprefix(object_prefix))
+    existing_object_ids: set[str] = set(
+        t.key.object.removeprefix(object_prefix)
         for t in existing_object_tuples
         if t.key.object.startswith(object_prefix)
     )

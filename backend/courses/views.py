@@ -11,7 +11,7 @@ from enrollment.serializers import EnrollmentReadSerializer
 
 from . import pagination, queries
 
-from .permissions import UserCanEditCourseClass
+from .permissions import UserCanModifyCourseClass
 from .serializers import (
     CourseSerializer,
     CourseCategorySerializer,
@@ -57,11 +57,10 @@ class CourseClassViewSet(viewsets.ModelViewSet):
         "list": [AllowAny],
         "retrieve": [AllowAny],
         "create": [DjangoModelPermissions],
-        "update": [IsAuthenticated, DjangoModelPermissions, UserCanEditCourseClass],
+        "update": [IsAuthenticated, DjangoModelPermissions | UserCanModifyCourseClass],
         "partial_update": [
             IsAuthenticated,
-            DjangoModelPermissions,
-            UserCanEditCourseClass,
+            DjangoModelPermissions | UserCanModifyCourseClass,
         ],
         "destroy": [IsAuthenticated, DjangoModelPermissions],
         "me": [IsAuthenticated],

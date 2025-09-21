@@ -137,3 +137,48 @@ class CourseClassViewTests(APITestCase):
         self.assertEqual(response_2.data["role"], EnrollmentRole.STUDENT.label)
         self.assertFalse(response_2.data["access"]["can_edit"])
         self.assertTrue(response_2.data["access"]["can_view"])
+
+    def test_update_course_class_forbidden(self):
+        course = Course.objects.create(name="Test Course", description="A test course")
+        course_class = CourseClass.objects.create(
+            course=course,
+            name="Test Class",
+            start_date="2023-01-01",
+            end_date="2023-06-01",
+            is_active=True,
+            is_open=True,
+        )
+        response = self.client.put(
+            reverse("course-class-detail", args=[course_class.id]),
+            data={
+                "name": "Updated Class Name",
+                "start_date": "2023-01-01",
+                "end_date": "2023-06-01",
+                "is_active": True,
+                "is_open": True,
+                "course": course.id,
+            },
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_update_course_class_success(self):
+        course = Course.objects.create(name="Test Course", description="A test course")
+        course_class = CourseClass.objects.create(
+            course=course,
+            name="Test Class",
+            start_date="2023-01-01",
+            end_date="2023-06-01",
+            is_active=True,
+            is_open=True,
+        )
+        Enrollment.objects.create(
+            user=self.user, course_class=course_class, role=EnrollmentRole.TEACHER
+        )
+        response = self.client.patch(
+            reverse("course-class-detail", args=[course_class.id]),
+            data={
+                "name": "Updated Class Name",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["name"], "Updated Class Name")
