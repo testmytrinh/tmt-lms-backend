@@ -141,11 +141,13 @@ def delete_all_object_tuples(subject_key: str, object_type: str):
         return client.write(ClientWriteRequest(deletes=to_delete))
 
 
-def filter_allowed_relations(self, relations: list[str]) -> list[str]:
-    if not self.subject_key or not self.object_key or not relations:
+def filter_allowed_relations(
+    subject_key: str, object_key: str, relations: list[str]
+) -> list[str]:
+    if not subject_key or not object_key or not relations:
         raise ValueError("subject_key, object_key and relations are required")
 
     body = ClientListRelationsRequest(
-        user=self.subject_key, object=self.object_key, relations=relations
+        user=subject_key, object=object_key, relations=relations
     )
     return client.list_relations(body)

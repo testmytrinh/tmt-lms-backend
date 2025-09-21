@@ -1,8 +1,9 @@
+from functools import partial
 from rest_framework.test import APITestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
-from enrollment.models import Enrollment
+from enrollment.models import Enrollment, EnrollmentRole
 
 from ..models import Course, CourseCategory, CourseClass
 
@@ -99,3 +100,40 @@ class CourseClassViewTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response.data["results"], list)
         self.assertEqual(len(response.data["results"]), 2)
+
+    def test_my_enrollment(self):
+        course = Course.objects.create(name="Test Course", description="A test course")
+        course_class_1 = CourseClass.objects.create(
+            course=course,
+            name="Test Class",
+            start_date="2023-01-01",
+            end_date="2023-06-01",
+            is_active=True,
+            is_open=False,
+        )
+        course_class_2 = CourseClass.objects.create(
+            course=course,
+            name="Open Class",
+            start_date="2023-01-01",
+            end_date="2023-06-01",
+            is_active=True,
+            is_open=False,
+        )
+        Enrollment.objects.create(
+            user=self.user, course_class=course_class_1, role=EnrollmentRole.TEACHER
+        )
+        Enrollment.objects.create(
+            user=self.user, course_class=course_class_2, role=EnrollmentRole.STUDENT
+        )
+
+        make_url = partial(reverse, "course-class-my-enrollment")
+        response_1 = self.client.get(make_url(args=[course_class_1.id]))
+        self.assertEqual(response_1.status_code, 200)
+        self.assertEqual(response_1.data["role"], EnrollmentRole.TEACHER.label)
+        self.assertTrue(response_1.data["access"]["can_edit"])
+        self.assertTrue(response_1.data["access"]["can_view"])
+        response_2 = self.client.get(make_url(args=[course_class_2.id]))
+        self.assertEqual(response_2.status_code, 200)
+        self.assertEqual(response_2.data["role"], EnrollmentRole.STUDENT.label)
+        self.assertFalse(response_2.data["access"]["can_edit"])
+        self.assertTrue(response_2.data["access"]["can_view"])
