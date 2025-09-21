@@ -13,6 +13,6 @@ jobs:
         uses: openfga/action-openfga-deploy@v0.1.1
         with:
           api-url: http://localhost:8080
-          api-token: ${{ secrets.KEY }}
-          store-id: ${{ env.STORE_ID }}
+          api-token: ${{ secrets.OPENFGA_API_TOKEN }}
+          store-id: ${{ secrets.OPENFGA_STORE_ID }}
           model-file-path: openfga/schemas/lms.fga
