@@ -4,12 +4,22 @@ from datetime import timedelta
 
 from .models import (
     Enrollment,
-    StudyGroup,
+    EnrollmentRole,
 )
 
 
 def get_all_enrollments():
     return Enrollment.objects.all()
+
+
+def count_course_class_enrollments(course_class_id):
+    return Enrollment.objects.filter(course_class_id=course_class_id).count()
+
+
+def get_course_class_teachers_enrollment(course_class_id):
+    return Enrollment.objects.filter(
+        course_class_id=course_class_id, role=EnrollmentRole.TEACHER
+    )
 
 
 def get_enrollments_this_month():

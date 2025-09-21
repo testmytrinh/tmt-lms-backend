@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.db import models
 
 from institution.models import Department, Term
-from courseware.models import CourseTemplate
 
 User = get_user_model()
 
@@ -52,16 +51,9 @@ class CourseClass(models.Model):
         null=True,
         related_name="course_classes",
     )
-    course_template = models.ForeignKey(
-        CourseTemplate,
-        blank=True,
-        null=True,
-        on_delete=models.PROTECT,
-        related_name="course_classes",
-    )
 
     class Meta:
         verbose_name_plural = "Course Classes"
 
     def __str__(self):
-        return f"[{self.id}] {self.name} - {self.course.name}"
+        return f"[{self.pk}] {self.name} - {self.course.name}"

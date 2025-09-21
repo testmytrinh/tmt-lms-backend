@@ -5,37 +5,28 @@ type user
 
 type group
   relations
-    define member: [user]
+    define member: [user, group#member]
 
 type course_class
   relations
     define teacher: [user, group#member]
+    define editor: [user, group#member]
     define student: [user, group#member]
     define guest: [user, user:*]
-    define can_edit: teacher
+    define can_modify: teacher
+    define can_edit: teacher or editor
     define can_view: student or guest or can_edit
 
-type course_template
+type content_node
   relations
-    define owner: [user]
-    define editor: [user, group#member]
-    define viewer: [user, user:*, group#member]
     define course_class: [course_class]
-    define can_modify: owner
-    define can_edit: can_modify or editor or can_edit from course_class
-    define can_view: viewer or can_edit or can_view from course_class
-
-type template_node
-  relations
-    define template: [course_template]
-    define parent_node: [template_node]
+    define parent: [content_node]
     define owner: [user]
     define editor: [user, group#member]
     define viewer: [user, user:*, group#member]
-    define can_modify: owner or can_modify from template
-    define can_edit: editor or can_modify or can_edit from parent_node
-    define can_view: viewer or can_edit or can_view from parent_node or can_view from template
-
+    define can_modify: owner or can_modify from parent or can_modify from course_class
+    define can_edit: editor or can_modify or can_edit from parent
+    define can_view: viewer or can_edit or can_view from parent or can_view from course_class
 
 type folder
   relations

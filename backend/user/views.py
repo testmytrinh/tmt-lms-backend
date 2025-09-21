@@ -1,3 +1,4 @@
+from rest_framework.reverse import reverse
 from rest_framework.decorators import action
 from rest_framework.permissions import (
     AllowAny,
@@ -23,7 +24,8 @@ from .serializers import (
     UserUpdateSerializer,
 )
 
-from . import queries
+from . import queries, tasks
+
 
 class CookieTokenObtainPairView(TokenObtainPairView):
     def finalize_response(self, request, response, *args, **kwargs):
@@ -90,12 +92,29 @@ class UserViewSet(ModelViewSet):
             "partial_update": [IsAuthenticated, IsSelf | IsAdminUser],
             "destroy": [IsAuthenticated, IsSelf | IsAdminUser],
             "me": [IsAuthenticated],
+            "activate": [AllowAny],
         }
         permission_classes = PERMISSION_MAP.get(self.action, [])
         return [permission() for permission in permission_classes]
 
     def perform_create(self, serializer):
-        return super().perform_create(serializer)
+        super().perform_create(serializer)
+        token = serializer.instance.generate_activation_token()
+        url = f"{self.request.build_absolute_uri(reverse('user-activate', kwargs={'token': token}))}"
+        tasks.send_account_activation_email(url, serializer.data)
+
+    @action(detail=False, methods=["get"], url_path="activate/(?P<token>.+)")
+    def activate(self, request, token):
+        try:
+            user = queries.get_inactive_user_by_activation_token(token)
+            if user:
+                user.is_active = True
+                user.save(update_fields=["is_active"])
+                return Response(
+                    {"detail": "Account activated successfully."}, status=200
+                )
+        except Exception:
+            return Response({"detail": "Invalid or expired token."}, status=400)
 
     @action(detail=False, methods=["get"])
     def me(self, request):

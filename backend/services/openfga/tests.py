@@ -10,7 +10,7 @@ from openfga_sdk.client.models import (
 )
 from openfga_sdk import ReadRequestTupleKey
 
-import proxies.openfga.sync as fga_sync
+import services.openfga.sync as fga_sync
 
 
 class OpenFGAClientSmokeTestCase(TestCase):

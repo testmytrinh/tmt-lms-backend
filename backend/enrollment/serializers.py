@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field, asdict, InitVar
 from rest_framework import serializers
 
-from proxies.openfga.sync.utils import list_allowed_relations
-from proxies.openfga.relations import CourseClassRelation, UserRelation
+from services.openfga.sync.utils import filter_allowed_relations
+from services.openfga.relations import CourseClassRelation, UserRelation
 from user.serializers import UserReadSerializer
 
 from .models import Enrollment, EnrollmentRole, StudyGroup
@@ -15,7 +15,7 @@ class CourseClassAccess:
     can_edit: bool = field(init=False, default=False)
 
     def __post_init__(self, enrollment: Enrollment):
-        allowed_relations = list_allowed_relations(
+        allowed_relations = filter_allowed_relations(
             subject_key=f"{UserRelation.TYPE}:{enrollment.user.pk}",
             object_key=f"{CourseClassRelation.TYPE}:{enrollment.course_class.pk}",
             relations=[CourseClassRelation.CAN_VIEW, CourseClassRelation.CAN_EDIT],

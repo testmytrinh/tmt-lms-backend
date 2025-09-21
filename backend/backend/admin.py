@@ -13,7 +13,6 @@ def dashboard_callback(request, context):
     sum_enrollments = get_all_enrollments().count()
     sum_new_enrollments_this_month = get_enrollments_this_month().count()
 
-
     context.update(
         {
             "user": request.user,

@@ -19,6 +19,7 @@ DEBUG = getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = ["api.localhost", "localhost"]
 
+TEST_RUNNER = 'backend.test_runner.MyCustomTestRunner'
 
 # Application definition
 

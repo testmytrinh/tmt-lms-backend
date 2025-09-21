@@ -20,12 +20,7 @@ from courses.views import (
 from enrollment.views import (
     EnrollmentViewSet,
 )
-from courseware.views import (
-    CourseTemplateViewSet,
-    TemplateNodeViewSet,
-    ModuleViewSet,
-    LessonViewSet,
-)
+from courseware.views import ContentNodeViewSet
 
 router = DefaultRouter()
 
@@ -36,14 +31,11 @@ router.register(r"courses", CourseViewSet, basename="course")
 router.register(r"categories", CourseCategoryViewSet, basename="course-category")
 router.register(r"classes", CourseClassViewSet, basename="course-class")
 router.register(r"enrollments", EnrollmentViewSet, basename="enrollment")
-router.register(r"templates", CourseTemplateViewSet, basename="course-template")
 router.register(
-    r"templates/(?P<template_id>\d+)/nodes",
-    TemplateNodeViewSet,
-    basename="template-node",
+    r"classes/(?P<class_id>\d+)/nodes",
+    ContentNodeViewSet,
+    basename="content-node",
 )
-router.register(r"modules", ModuleViewSet, basename="module")
-router.register(r"lessons", LessonViewSet, basename="lesson")
 
 
 urlpatterns = [

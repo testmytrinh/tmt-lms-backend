@@ -4,24 +4,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.forms import ValidationError
 
+from courses.models import CourseClass
+
 User = get_user_model()
-
-
-class CourseTemplate(models.Model):
-    title = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
-    owner = models.ForeignKey(
-        User,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="course_templates",
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.title} (by {self.owner if self.owner else 'Unknown'})"
 
 
 ALLOWED_CONTENT_TYPES = [
@@ -31,12 +16,13 @@ ALLOWED_CONTENT_TYPES = [
 MAX_DEPTH = 3  # e.g., CourseTemplate -> Module -> Lesson
 
 
-class TemplateNode(models.Model):
+class ContentNode(models.Model):
+    title = models.CharField(max_length=200)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey("content_type", "object_id")
-    course_template = models.ForeignKey(
-        CourseTemplate, on_delete=models.CASCADE, related_name="template_nodes"
+    course_class = models.ForeignKey(
+        CourseClass, on_delete=models.CASCADE, related_name="content_nodes"
     )
     parent = models.ForeignKey(
         "self", on_delete=models.CASCADE, null=True, blank=True, related_name="children"
@@ -45,7 +31,7 @@ class TemplateNode(models.Model):
 
     class Meta:
         unique_together = [
-            ("course_template", "parent", "order"),
+            ("course_class", "parent", "order"),
             ("content_type", "object_id"),
         ]
         ordering = ["order"]
@@ -54,10 +40,8 @@ class TemplateNode(models.Model):
         if self.content_type.model not in ALLOWED_CONTENT_TYPES:
             raise ValidationError(f"Content type {self.content_type} is not allowed.")
 
-        if self.parent and self.parent.course_template != self.course_template:
-            raise ValidationError(
-                "Parent node must belong to the same course template."
-            )
+        if self.parent and self.parent.course_class_id != self.course_class_id:
+            raise ValidationError("Parent node must belong to the same course class.")
 
         # Depth check
         depth = 0
@@ -70,36 +54,25 @@ class TemplateNode(models.Model):
 
     def __str__(self):
         content_obj_id = self.content_object.id if self.content_object else "None"
-        return f"[{self.course_template.title}({self.course_template.id})][{self.parent.content_object.title if self.parent else ''}] ({self.content_type.model}-<{self.content_object}>-{content_obj_id})"
+        return (
+            f"[class:{self.course_class_id}]"
+            f"[{self.parent.title if self.parent else ''}] "
+            f"({self.content_type.model}-<{self.content_object}>-{content_obj_id})"
+        )
 
 
 class Module(models.Model):
-    title = models.CharField(max_length=200)
     content = models.TextField(blank=True)
-
-    def __str__(self):
-        return f"{self.title}"
 
 
 class Lesson(models.Model):
-    title = models.CharField(max_length=200)
     content = models.TextField(blank=True)
-
-    def __str__(self):
-        return f"{self.title}"
 
 
 class CodingQuestion(models.Model):
     name = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    class_id = models.ForeignKey(
-        CourseTemplate,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="coding_questions",
-    )
     description = models.TextField(blank=True)
     hidden = models.BooleanField(default=False)
     returnable_forced = models.BooleanField(default=False)

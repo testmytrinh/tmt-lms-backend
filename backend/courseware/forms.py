@@ -1,10 +1,10 @@
 from django import forms
-from .models import TemplateNode, ALLOWED_CONTENT_TYPES
+from .models import ContentNode, ALLOWED_CONTENT_TYPES
 
 
-class TemplateNodeForm(forms.ModelForm):
+class ContentNodeForm(forms.ModelForm):
     class Meta:
-        model = TemplateNode
+        model = ContentNode
         fields = "__all__"
 
     def __init__(self, *args, **kwargs):

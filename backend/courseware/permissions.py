@@ -1,114 +1,66 @@
-from proxies.openfga.sync.permissions import FGABasePermission
-from proxies.openfga.relations import (
-    CourseTemplateRelation,
-    UserRelation,
-    TemplateNodeRelation,
-)
-from .models import TemplateNode, Module, Lesson
+from rest_framework.permissions import BasePermission
+from openfga_sdk.client.models import ClientCheckRequest
+from services.openfga.sync import client as fga
+from services.openfga.relations import ContentNodeRelation, UserRelation
+
+from courses.permissions import UserCanViewCourseClass, UserCanEditCourseClass
 
 
-class OFGAUserTemplate(FGABasePermission):
-    subject_type = UserRelation.TYPE
-    object_type = CourseTemplateRelation.TYPE
-
-    def get_subject_id(self, request, view, obj) -> str:
-        return str(request.user.id) if request.user.is_authenticated else "*"
-
-    def get_object_id(self, request, view, obj) -> str:
-        return str(obj.id)
-
-
-class OFGAUserCanEditTemplate(OFGAUserTemplate):
-    relation = CourseTemplateRelation.CAN_EDIT
-
-
-class OFGAUserCanViewTemplate(OFGAUserTemplate):
-    relation = CourseTemplateRelation.CAN_VIEW
-
-
-class OFGAUserCanModifyTemplate(OFGAUserTemplate):
-    relation = CourseTemplateRelation.CAN_MODIFY
-
-
-class OFGAUserCanViewTemplateNodesInPath(FGABasePermission):
-    relation = CourseTemplateRelation.CAN_VIEW
-    subject_type = UserRelation.TYPE
-    object_type = CourseTemplateRelation.TYPE
-
-    def get_subject_id(self, request, view, obj) -> str:
-        return str(request.user.id) if request.user.is_authenticated else "*"
-
-    def get_object_id(self, request, view, obj) -> str:
-        return view.kwargs.get("template_id")
-
+class UserCanListClasssNodes(BasePermission):
     def has_permission(self, request, view):
-        return self.check(
-            subject_key=f"{self.subject_type}:{self.get_subject_id(request, view, None)}",
-            relation=self.relation,
-            object_key=f"{self.object_type}:{self.get_object_id(request, view, None)}",
-        )
+        class_id = view.kwargs.get("class_id")
+        return UserCanViewCourseClass().has_object_permission(request, view, class_id)
 
 
-class OFGAUserNode(FGABasePermission):
-    subject_type = UserRelation.TYPE
-    object_type = TemplateNodeRelation.TYPE
-
-    def get_subject_id(self, request, view, obj) -> str:
-        return str(request.user.id) if request.user.is_authenticated else "*"
-
-    def get_object_id(self, request, view, obj) -> str:
-        return str(obj.id)
+class UserCanCreateClassNodes(BasePermission):
+    def has_permission(self, request, view):
+        class_id = view.kwargs.get("class_id")
+        return UserCanEditCourseClass().has_object_permission(request, view, class_id)
 
 
-class OFGAUserCanModifyNode(OFGAUserNode):
-    relation = TemplateNodeRelation.CAN_MODIFY
+class UserCanViewContentNode(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        subject_id = request.user.pk if request.user.is_authenticated else "*"
+        subject_key = f"{UserRelation.TYPE}:{subject_id}"
+        object_key = f"{ContentNodeRelation.TYPE}:{obj.pk}"
+        relation = ContentNodeRelation.CAN_VIEW
+
+        return fga.check(
+            ClientCheckRequest(
+                user=subject_key,
+                relation=relation,
+                object=object_key,
+            )
+        ).allowed
 
 
-class OFGAUserCanViewNode(OFGAUserNode):
-    relation = TemplateNodeRelation.CAN_VIEW
+class UserCanEditContentNode(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        subject_id = request.user.pk if request.user.is_authenticated else "*"
+        subject_key = f"{UserRelation.TYPE}:{subject_id}"
+        object_key = f"{ContentNodeRelation.TYPE}:{obj.pk}"
+        relation = ContentNodeRelation.CAN_EDIT
+
+        return fga.check(
+            ClientCheckRequest(
+                user=subject_key,
+                relation=relation,
+                object=object_key,
+            )
+        ).allowed
 
 
-class OFGAUserCanEditNode(OFGAUserNode):
-    relation = TemplateNodeRelation.CAN_EDIT
+class UserCanModifyContentNode(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        subject_id = request.user.pk if request.user.is_authenticated else "*"
+        subject_key = f"{UserRelation.TYPE}:{subject_id}"
+        object_key = f"{ContentNodeRelation.TYPE}:{obj.pk}"
+        relation = ContentNodeRelation.CAN_MODIFY
 
-
-class OFGAUserModule(FGABasePermission):
-    subject_type = UserRelation.TYPE
-    object_type = TemplateNodeRelation.TYPE
-
-    def get_subject_id(self, request, view, obj) -> str:
-        return str(request.user.id) if request.user.is_authenticated else "*"
-
-    def get_object_id(self, request, view, obj: Module) -> str:
-        # Find the TemplateNode that references this Module
-        node = TemplateNode.objects.get(content_type__model="module", object_id=obj.pk)
-        return str(node.pk)
-
-
-class OFGAUserCanEditModule(OFGAUserModule):
-    relation = TemplateNodeRelation.CAN_EDIT
-
-
-class OFGAUserCanViewModule(OFGAUserModule):
-    relation = TemplateNodeRelation.CAN_VIEW
-
-
-class OFGAUserLesson(FGABasePermission):
-    subject_type = UserRelation.TYPE
-    object_type = TemplateNodeRelation.TYPE
-
-    def get_subject_id(self, request, view, obj) -> str:
-        return str(request.user.id) if request.user.is_authenticated else "*"
-
-    def get_object_id(self, request, view, obj: Lesson) -> str:
-        # Find the TemplateNode that references this Lesson
-        node = TemplateNode.objects.get(content_type__model="lesson", object_id=obj.pk)
-        return str(node.pk)
-
-
-class OFGAUserCanEditLesson(OFGAUserLesson):
-    relation = TemplateNodeRelation.CAN_EDIT
-
-
-class OFGAUserCanViewLesson(OFGAUserLesson):
-    relation = TemplateNodeRelation.CAN_VIEW
+        return fga.check(
+            ClientCheckRequest(
+                user=subject_key,
+                relation=relation,
+                object=object_key,
+            )
+        ).allowed

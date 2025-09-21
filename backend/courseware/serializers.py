@@ -1,25 +1,8 @@
 from rest_framework import serializers
 from django.contrib.contenttypes.models import ContentType
 
-from user.serializers import UserReadSerializer
 
-from .models import CourseTemplate, Lesson, Module, TemplateNode
-
-
-class CourseTemplateReadSerializer(serializers.ModelSerializer):
-    owner = UserReadSerializer(read_only=True)
-
-    class Meta:
-        model = CourseTemplate
-        fields = "__all__"
-
-
-class CourseTemplateWriteSerializer(serializers.ModelSerializer):
-    owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
-
-    class Meta:
-        model = CourseTemplate
-        fields = "__all__"
+from .models import Lesson, Module, ContentNode
 
 
 class ModuleSerializer(serializers.ModelSerializer):
@@ -34,16 +17,15 @@ class LessonSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class TemplateNodeListSerializer(serializers.ModelSerializer):
+class ContentNodeListSerializer(serializers.ModelSerializer):
     content_type = serializers.CharField(source="content_type.model")
-    title = serializers.CharField(source="content_object.title", read_only=True)
 
     class Meta:
-        model = TemplateNode
+        model = ContentNode
         fields = "__all__"
 
 
-class TemplateNodeDetailSerializer(serializers.ModelSerializer):
+class ContentNodeDetailSerializer(serializers.ModelSerializer):
     content_type = serializers.CharField(source="content_type.model")
     content_object = serializers.SerializerMethodField()
 
@@ -55,16 +37,30 @@ class TemplateNodeDetailSerializer(serializers.ModelSerializer):
         return None
 
     class Meta:
-        model = TemplateNode
+        model = ContentNode
         fields = "__all__"
 
 
-class TemplateNodeWriteSerializer(serializers.ModelSerializer):
+class ContentNodeWriteSerializer(serializers.ModelSerializer):
     content_type = serializers.SlugRelatedField(
         slug_field="model",  # or use "id"
         queryset=ContentType.objects.all(),
     )
 
     class Meta:
-        model = TemplateNode
+        model = ContentNode
+        fields = "__all__"
+
+
+class ContentNodeTreeSerializer(serializers.ModelSerializer):
+    content_type = serializers.CharField(source="content_type.model")
+    children = serializers.SerializerMethodField()
+
+    def get_children(self, obj):
+        if obj.children.exists():
+            return ContentNodeTreeSerializer(obj.children.all(), many=True).data
+        return []
+
+    class Meta:
+        model = ContentNode
         fields = "__all__"

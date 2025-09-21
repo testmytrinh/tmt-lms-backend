@@ -1,85 +1,59 @@
 from django.contrib.auth import get_user_model
-from django.db.models.signals import post_save, m2m_changed
+from django.db.models.signals import m2m_changed, pre_delete
 from django.dispatch import receiver
+from functools import partial
 from openfga_sdk.client.models import (
     ClientTuple,
     ClientWriteRequest,
-    ClientListObjectsRequest,
 )
 import logging
 
-from proxies.openfga.sync import client as fga
-from proxies.openfga.relations import (
-    GroupRelation,
+from services.openfga.relations import (
     UserRelation,
+    GroupRelation,
 )
-
-from .decorators import (
-    handle_user_postsave_syncing_exceptions,
-    handle_user_m2m_changed_syncing_exceptions,
-)
+from services.openfga.sync import client as fga
 
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
 
-def create_user_group_member_tuple(user_id, group_id):
-    return ClientTuple(
-        user=f"{UserRelation.TYPE}:{user_id}",
-        relation=GroupRelation.MEMBER,
-        object=f"{GroupRelation.TYPE}:{group_id}",
-    )
-
-
-def create_user_list_groups_request(user_id):
-    return ClientListObjectsRequest(
-        user=f"{UserRelation.TYPE}:{user_id}",
-        relation=GroupRelation.MEMBER,
-        type=GroupRelation.TYPE,
-    )
-
-
-@receiver(post_save, sender=User)
-@handle_user_postsave_syncing_exceptions
-def sync_user_groups_on_created(sender, instance, created, **kwargs):
-    if not created:
-        return
-    groups = instance.groups.all()
-    if not groups:
-        return
-    tuples = [create_user_group_member_tuple(instance.id, group.id) for group in groups]
-    return fga.write(ClientWriteRequest(writes=tuples))
-
-
-@receiver(m2m_changed, sender=User.groups.through)
-@handle_user_m2m_changed_syncing_exceptions
+@receiver(
+    m2m_changed, sender=User.groups.through, dispatch_uid="sync_user_groups_on_changed"
+)
 def sync_user_groups_on_changed(
     sender, instance, action, reverse, model, pk_set, **kwargs
 ):
-    if action not in ["post_add", "post_remove", "post_clear"]:
+    if action not in ["post_add", "post_remove"]:
         return
-    desired_group_ids = set(instance.groups.values_list("id", flat=True))
-    curr_group_response: list[str] = fga.list_objects(
-        create_user_list_groups_request(instance.id)
-    ).objects
-    curr_group_ids = set(
-        int(obj.removeprefix(f"{GroupRelation.TYPE}:")) for obj in curr_group_response
+    make_tuple = partial(
+        ClientTuple,
+        user=f"{UserRelation.TYPE}:{instance.pk}",
+        relation=GroupRelation.MEMBER,
     )
-    to_add_group_ids = desired_group_ids - curr_group_ids
-    to_del_group_ids = curr_group_ids - desired_group_ids
+    tuples = [make_tuple(object=f"{GroupRelation.TYPE}:{id}") for id in pk_set]
+    return fga.write(
+        ClientWriteRequest(
+            writes=tuples if action == "post_add" else None,
+            deletes=tuples if action == "post_remove" else None,
+        )
+    )
 
-    payload = {}
-    if to_add_group_ids:
-        payload["writes"] = [
-            create_user_group_member_tuple(instance.id, gr_id)
-            for gr_id in to_add_group_ids
-        ]
-    if to_del_group_ids:
-        payload["deletes"] = [
-            create_user_group_member_tuple(instance.id, gr_id)
-            for gr_id in to_del_group_ids
-        ]
-    if not payload:
-        return
-    return fga.write(ClientWriteRequest(**payload))
+
+@receiver(pre_delete, sender=User, dispatch_uid="cleanup_user_in_fga")
+def cleanup_user_in_fga(sender, instance, **kwargs):
+    make_tuple = partial(ClientTuple, user=f"{UserRelation.TYPE}:{instance.pk}")
+
+    # Clean group memberships
+    group_ids = instance.groups.values_list("id", flat=True)
+    fga.write(
+        ClientWriteRequest(
+            deletes=[
+                make_tuple(
+                    object=f"{GroupRelation.TYPE}:{id}", relation=GroupRelation.MEMBER
+                )
+                for id in group_ids
+            ]
+        )
+    )

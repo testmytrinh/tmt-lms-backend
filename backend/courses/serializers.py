@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from user.serializers import UserReadSerializer
-from enrollment.models import EnrollmentRole
+from enrollment import queries
 
 from .models import Course, CourseCategory, CourseClass
 
@@ -28,11 +28,11 @@ class CourseClassReadSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_enrollment_count(self, obj):
-        return obj.enrollments.exclude(role=EnrollmentRole.TEACHER).count()
+        return queries.count_course_class_enrollments(obj.id)
 
     def get_teachers(self, obj):
-        teacher_enrollments = obj.enrollments.filter(
-            role=EnrollmentRole.TEACHER
+        teacher_enrollments = queries.get_course_class_teachers_enrollment(
+            obj.id
         ).select_related("user")
         return UserReadSerializer([e.user for e in teacher_enrollments], many=True).data
 

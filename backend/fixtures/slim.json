@@ -1,0 +1,42 @@
+[
+	{"model": "auth.group", "pk": 1, "fields": {"name": "admin"}},
+	{"model": "auth.group", "pk": 2, "fields": {"name": "teacher"}},
+	{"model": "auth.group", "pk": 3, "fields": {"name": "student"}},
+
+	{"model": "user.user", "pk": 1, "fields": {"email": "admin1@example.com", "first_name": "Admin", "last_name": "One", "is_active": true, "is_staff": true, "is_superuser": true, "password": "pbkdf2_sha256$600000$example$c2VjcmV0aGFzaA==", "groups": [1]}},
+
+	{"model": "user.user", "pk": 3, "fields": {"email": "teacher1@example.com", "first_name": "Alice", "last_name": "Teacher", "is_active": true, "is_staff": false, "is_superuser": false, "password": "pbkdf2_sha256$600000$example$c2VjcmV0aGFzaA==", "groups": [2]}},
+	{"model": "user.user", "pk": 4, "fields": {"email": "teacher2@example.com", "first_name": "Bob", "last_name": "Teacher", "is_active": true, "is_staff": false, "is_superuser": false, "password": "pbkdf2_sha256$600000$example$c2VjcmV0aGFzaA==", "groups": [2]}},
+	{"model": "user.user", "pk": 5, "fields": {"email": "teacher3@example.com", "first_name": "Carol", "last_name": "Teacher", "is_active": true, "is_staff": false, "is_superuser": false, "password": "pbkdf2_sha256$600000$example$c2VjcmV0aGFzaA==", "groups": [2]}},
+
+	{"model": "user.user", "pk": 8, "fields": {"email": "student1@example.com", "first_name": "Sam", "last_name": "Student", "is_active": true, "is_staff": false, "is_superuser": false, "password": "pbkdf2_sha256$600000$example$c2VjcmV0aGFzaA==", "groups": [3]}},
+	{"model": "user.user", "pk": 9, "fields": {"email": "student2@example.com", "first_name": "Sara", "last_name": "Student", "is_active": true, "is_staff": false, "is_superuser": false, "password": "pbkdf2_sha256$600000$example$c2VjcmV0aGFzaA==", "groups": [3]}},
+	{"model": "user.user", "pk": 10, "fields": {"email": "student3@example.com", "first_name": "Sean", "last_name": "Student", "is_active": true, "is_staff": false, "is_superuser": false, "password": "pbkdf2_sha256$600000$example$c2VjcmV0aGFzaA==", "groups": [3]}},
+	{"model": "user.user", "pk": 11, "fields": {"email": "student4@example.com", "first_name": "Sophie", "last_name": "Student", "is_active": true, "is_staff": false, "is_superuser": false, "password": "pbkdf2_sha256$600000$example$c2VjcmV0aGFzaA==", "groups": [3]}},
+	{"model": "user.user", "pk": 12, "fields": {"email": "student5@example.com", "first_name": "Steve", "last_name": "Student", "is_active": true, "is_staff": false, "is_superuser": false, "password": "pbkdf2_sha256$600000$example$c2VjcmV0aGFzaA==", "groups": [3]}},
+
+	{"model": "institution.department", "pk": 1, "fields": {"name": "Science", "code": "SCI"}},
+	{"model": "institution.department", "pk": 2, "fields": {"name": "Arts", "code": "ART"}},
+	{"model": "institution.department", "pk": 3, "fields": {"name": "Business", "code": "BUS"}},
+
+	{"model": "institution.term", "pk": 1, "fields": {"name": "Fall 2025", "start_date": "2025-09-01", "end_date": "2025-12-20"}},
+	{"model": "institution.term", "pk": 2, "fields": {"name": "Spring 2026", "start_date": "2026-01-10", "end_date": "2026-05-10"}},
+	{"model": "institution.term", "pk": 3, "fields": {"name": "Summer 2026", "start_date": "2026-06-05", "end_date": "2026-08-15"}},
+
+	{"model": "courses.coursecategory", "pk": 1, "fields": {"name": "Software", "description": "Software and programming"}},
+	{"model": "courses.coursecategory", "pk": 2, "fields": {"name": "Mathematics", "description": "Math courses"}},
+	{"model": "courses.coursecategory", "pk": 3, "fields": {"name": "Science", "description": "Science courses"}},
+	{"model": "courses.coursecategory", "pk": 4, "fields": {"name": "Design", "description": "Design and UX"}},
+	{"model": "courses.coursecategory", "pk": 5, "fields": {"name": "Business", "description": "Business and management"}},
+
+	{"model": "courses.course", "pk": 1, "fields": {"name": "Python Basics", "description": "Learn Python from scratch", "is_active": true, "categories": [1]}},
+	{"model": "courses.course", "pk": 2, "fields": {"name": "Django Web Dev", "description": "Build web apps with Django", "is_active": true, "categories": [1]}},
+	{"model": "courses.course", "pk": 3, "fields": {"name": "Data Structures", "description": "Core DS concepts", "is_active": true, "categories": [2,1]}},
+	{"model": "courses.course", "pk": 4, "fields": {"name": "Algorithms", "description": "Algorithm design and analysis", "is_active": true, "categories": [2]}},
+	{"model": "courses.course", "pk": 5, "fields": {"name": "Physics 101", "description": "Intro to Physics", "is_active": true, "categories": [3]}},
+	{"model": "courses.course", "pk": 6, "fields": {"name": "Chemistry Basics", "description": "Intro to Chemistry", "is_active": true, "categories": [3]}},
+	{"model": "courses.course", "pk": 7, "fields": {"name": "UI/UX Design", "description": "User experience fundamentals", "is_active": true, "categories": [4]}},
+	{"model": "courses.course", "pk": 8, "fields": {"name": "Project Management", "description": "Manage tech projects", "is_active": true, "categories": [5]}},
+	{"model": "courses.course", "pk": 9, "fields": {"name": "Machine Learning", "description": "ML basics", "is_active": true, "categories": [1,2]}},
+	{"model": "courses.course", "pk": 10, "fields": {"name": "Databases", "description": "Relational databases", "is_active": true, "categories": [1]}},
+]

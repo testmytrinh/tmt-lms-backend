@@ -40,10 +40,11 @@ def custom_exception_handler(exc, context):
 
     # Log the exception with context
     logger.error(
-        f"Exception in {view_name}: {exc}",
+        f"\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\nException in {view_name}: {exc}",
         exc_info=True,
         extra={"path": request.path if request else "Unknown"},
     )
+    logger.error("======================================\n\n")
 
     # If DRF already handled it, format the response consistently
     if response is not None:

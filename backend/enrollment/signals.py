@@ -3,8 +3,8 @@ from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 import logging
 
-from proxies.openfga.sync.utils import sync_relations
-from proxies.openfga.relations import (
+from services.openfga.sync.utils import sync_relations
+from services.openfga.relations import (
     CourseClassRelation,
     UserRelation,
 )

@@ -1,26 +1,33 @@
-from proxies.openfga.sync.permissions import FGABasePermission
-from proxies.openfga.relations import CourseClassRelation, UserRelation
+from rest_framework.permissions import BasePermission
+from openfga_sdk.client.models import ClientCheckRequest
+
+from services.openfga.relations import CourseClassRelation, UserRelation
+from services.openfga.sync import client
 
 
-class UserCanEditCourseClass(FGABasePermission):
-    relation = CourseClassRelation.CAN_EDIT
-    subject_type = UserRelation.TYPE
-    object_type = CourseClassRelation.TYPE
+class UserCanEditCourseClass(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        subject_id = request.user.pk if request.user.is_authenticated else "*"
+        subject_key = f"{UserRelation.TYPE}:{subject_id}"
+        object_key = f"{CourseClassRelation.TYPE}:{obj.pk}"
+        return client.check(
+            ClientCheckRequest(
+                user=subject_key,
+                relation=CourseClassRelation.CAN_EDIT,
+                object=object_key,
+            )
+        ).allowed
 
-    def get_subject_id(self, request, view, obj) -> str:
-        return str(request.user.id)
 
-    def get_object_id(self, request, view, obj) -> str:
-        return str(obj.id)
-
-
-class UserCanViewCourseClass(FGABasePermission):
-    relation = CourseClassRelation.CAN_VIEW
-    subject_type = UserRelation.TYPE
-    object_type = CourseClassRelation.TYPE
-
-    def get_subject_id(self, request, view, obj) -> str:
-        return str(request.user.id)
-
-    def get_object_id(self, request, view, obj) -> str:
-        return str(obj.id)
+class UserCanViewCourseClass(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        subject_id = request.user.pk if request.user.is_authenticated else "*"
+        subject_key = f"{UserRelation.TYPE}:{subject_id}"
+        object_key = f"{CourseClassRelation.TYPE}:{obj.pk}"
+        return client.check(
+            ClientCheckRequest(
+                user=subject_key,
+                relation=CourseClassRelation.CAN_VIEW,
+                object=object_key,
+            )
+        ).allowed
