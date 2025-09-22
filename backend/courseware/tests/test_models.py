@@ -187,3 +187,23 @@ class ContentNodeCreationTests(TestCase):
                 order=1,
             )
         self.assertIn("Exceeded maximum depth", str(context.exception))
+
+    def test_duplicate_content_object(self):
+        module = Module.objects.create(content="Content of test module")
+        ContentNode.objects.create(
+            title="Module 1",
+            content_object=module,
+            course_class=self.course_class,
+            order=1,
+        )
+        with self.assertRaises(Exception) as context:
+            ContentNode.objects.create(
+                title="Module 1 Duplicate",
+                content_object=module,  # Same content object
+                course_class=self.course_class,
+                order=2,
+            )
+        self.assertIn(
+            "Content node with this Content type and Object id already exists.",
+            str(context.exception),
+        )

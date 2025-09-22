@@ -46,7 +46,7 @@ class ContentNodeWriteSerializer(serializers.ModelSerializer):
         slug_field="model",  # or use "id"
         queryset=ContentType.objects.all(),
     )
-    content_object_data = serializers.JSONField(write_only=True, required=True)
+    content_object_data = serializers.JSONField(write_only=True, required=False)
 
     class Meta:
         model = ContentNode
@@ -60,8 +60,8 @@ class ContentNodeWriteSerializer(serializers.ModelSerializer):
             "content_object_data",
         ]
 
-    def _get_model_and_serializer(self, type_str: str):
-        type_str = (type_str or "").strip().lower()
+    def _get_model_and_serializer(self, content_type: ContentType):
+        type_str = content_type.model or ""
         m = {
             "module": (Module, ModuleSerializer),
             "lesson": (Lesson, LessonSerializer),
@@ -74,10 +74,25 @@ class ContentNodeWriteSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         content_type = attrs.get("content_type")
-        content_object_data = attrs.get("content_object_data", {})
+        content_object_data = attrs.pop("content_object_data", {})
         is_created = self.instance is None
 
+        # If updating, prevent changing content_type
+        if (
+            not is_created
+            and content_type
+            and content_type != self.instance.content_type
+        ):
+            raise serializers.ValidationError(
+                {"content_type": "Changing content type is not allowed."}
+            )
+        # If updating, use existing content_type if not provided
+        if not is_created and not content_type:
+            content_type = self.instance.content_type
+
         ModelClass, SerClass = self._get_model_and_serializer(content_type)
+        attrs["_content_model"] = ModelClass
+        attrs["_content_serializer"] = SerClass
 
         if not is_created:
             try:
@@ -85,20 +100,15 @@ class ContentNodeWriteSerializer(serializers.ModelSerializer):
             except ModelClass.DoesNotExist:
                 raise serializers.ValidationError({"object_id": "Object not found."})
             attrs["_content_instance"] = obj
-            attrs["_content_model"] = ModelClass
-        else:
-            if not isinstance(content_object_data, dict):
-                raise serializers.ValidationError(
-                    {"content_object_data": "Must be an object"}
-                )
-            nested = SerClass(data=content_object_data)
-            nested.is_valid(raise_exception=True)
-            attrs["_content_validated_data"] = nested.validated_data
-            attrs["_content_model"] = ModelClass
+
+        nested = SerClass(data=content_object_data)
+        nested.is_valid(raise_exception=True)
+        attrs["_content_validated_data"] = nested.validated_data
         return attrs
 
     def create(self, validated_data):
         ModelClass = validated_data.pop("_content_model")
+        _SerClass = validated_data.pop("_content_serializer")
 
         if "_content_instance" in validated_data:
             content_obj = validated_data.pop("_content_instance")
@@ -107,38 +117,23 @@ class ContentNodeWriteSerializer(serializers.ModelSerializer):
                 **validated_data.pop("_content_validated_data")
             )
 
-        ct = ContentType.objects.get_for_model(ModelClass)
         node = ContentNode.objects.create(
-            content_type=ct,
             object_id=content_obj.pk,
             **validated_data,
         )
         return node
 
     def update(self, instance: ContentNode, validated_data):
-        # If content update fields are provided, swap content
-        has_type = "content_type" in self.initial_data
-        _ = validated_data.pop("content_type", None)
-        _ = validated_data.pop("object_id", None)
-        _ = validated_data.pop("content_object_data", None)
-        if has_type:
-            ModelCls = validated_data.pop("_content_model")
-            if "_content_instance" in validated_data:
-                content_obj = validated_data.pop("_content_instance")
-            else:
-                content_obj = ModelCls.objects.create(
-                    **validated_data.pop("_content_validated_data")
-                )
-            ct = ContentType.objects.get_for_model(ModelCls)
-            instance.content_type = ct
-            instance.object_id = content_obj.pk
-
-        for field in ("title", "course_class", "parent", "order"):
-            if field in validated_data:
-                setattr(instance, field, validated_data[field])
+        if content_validated_data := validated_data.get("_content_validated_data"):
+            ser = validated_data.pop("_content_serializer")(
+                instance=instance.content_object,
+                data=content_validated_data,
+                partial=True,
+            )
+            ser.is_valid(raise_exception=True)
+            ser.save()
         instance.full_clean()
-        instance.save()
-        return instance
+        return super().update(instance, validated_data)
 
 
 class ContentNodeTreeSerializer(serializers.ModelSerializer):

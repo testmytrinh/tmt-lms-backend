@@ -51,6 +51,8 @@ class ContentNodeViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def tree(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
+        queryset = queries.get_root_nodes_by_class_id(
+            self.kwargs.get("class_id")
+        ).prefetch_related("children")
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
