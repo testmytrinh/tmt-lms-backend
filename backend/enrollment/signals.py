@@ -9,7 +9,6 @@ from services.openfga.relations import (
     UserRelation,
 )
 
-from .decorators import handle_enrollment_postsave_syncing_exceptions
 from .models import Enrollment, EnrollmentRole
 
 User = get_user_model()
@@ -23,11 +22,8 @@ ENROLLMENT_ROLE_RELATION_MAP = {
 }
 
 
-@receiver(post_save, sender=Enrollment)
-@handle_enrollment_postsave_syncing_exceptions
+@receiver(post_save, sender=Enrollment, dispatch_uid="sync_enrollment_to_fga")
 def sync_enrollment_to_fga(sender, instance: Enrollment, created, **kwargs):
-    if instance.role == EnrollmentRole.GUEST and instance.course_class.is_open:
-        return
     return sync_relations(
         subject_key=f"{UserRelation.TYPE}:{instance.user.pk}",
         desired_relations=set([ENROLLMENT_ROLE_RELATION_MAP[instance.role]]),

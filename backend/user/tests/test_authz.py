@@ -1,4 +1,5 @@
 from django.test import TestCase
+from unittest import skipIf
 from django.db.models import signals
 from django.contrib.auth.models import Group
 from openfga_sdk.client.models import (
@@ -6,12 +7,14 @@ from openfga_sdk.client.models import (
 )
 
 from services.openfga.sync import client as ofga
+from services.openfga.settings import configuration as ofga_config
 from services.openfga.relations import UserRelation, GroupRelation
 
 from ..signals import sync_user_groups_on_changed, cleanup_user_in_fga
 from ..models import User
 
 
+@skipIf(not ofga_config.api_url or not ofga_config.store_id, "OpenFGA not configured")
 class UserGroupMembershipSyncTestCase(TestCase):
     @classmethod
     def setUpClass(cls):

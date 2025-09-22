@@ -4,6 +4,7 @@ from rest_framework.views import exception_handler
 from django.core.exceptions import ObjectDoesNotExist
 from botocore.exceptions import ClientError
 import logging
+from django.forms import ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,10 @@ _EXCEPTION_MAPPING = {
     ObjectDoesNotExist: {
         "status_code": status.HTTP_404_NOT_FOUND,
         "message": "Resource not found.",
+    },
+    ValidationError: {
+        "status_code": status.HTTP_400_BAD_REQUEST,
+        "message": "Data validation error.",
     },
 }
 

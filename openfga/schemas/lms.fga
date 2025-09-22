@@ -12,10 +12,10 @@ type course_class
     define teacher: [user, group#member]
     define editor: [user, group#member]
     define student: [user, group#member]
-    define guest: [user, user:*]
+    define guest: [user, group#member]
     define can_modify: teacher
     define can_edit: teacher or editor
-    define can_view: student or guest or can_edit
+    define can_view: [user:*] or student or guest or can_edit
 
 type content_node
   relations
@@ -23,7 +23,7 @@ type content_node
     define parent: [content_node]
     define owner: [user]
     define editor: [user, group#member]
-    define viewer: [user, user:*, group#member]
+    define viewer: [user, group#member]
     define can_modify: owner or can_modify from parent or can_modify from course_class
     define can_edit: editor or can_modify or can_edit from parent
     define can_view: viewer or can_edit or can_view from parent or can_view from course_class
@@ -32,16 +32,16 @@ type folder
   relations
     define owner: [user]
     define parent: [folder]
-    define editor: [user, user:*, group#member]
-    define viewer: [user, user:*, group#member]
+    define editor: [user, group#member]
+    define viewer: [user, group#member]
     define can_edit: editor or owner or can_edit from parent
-    define can_view: viewer or can_view from parent or can_edit
+    define can_view: [user:*] or viewer or can_view from parent or can_edit
 
 type file
   relations
     define owner: [user]
     define parent: [folder]
-    define editor: [user, user:*, group#member] 
-    define viewer: [user, user:*, group#member]
+    define editor: [user, group#member] 
+    define viewer: [user, group#member]
     define can_edit: editor or owner or can_edit from parent
-    define can_view: viewer or can_view from parent or can_edit
+    define can_view: [user:*] or viewer or can_view from parent or can_edit

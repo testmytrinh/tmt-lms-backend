@@ -43,14 +43,21 @@ class ContentNode(models.Model):
         if self.parent and self.parent.course_class_id != self.course_class_id:
             raise ValidationError("Parent node must belong to the same course class.")
 
+        if self.parent and self.parent.content_type.model != "module":
+            raise ValidationError("Parent node must be of type 'module' or None.")
+
         # Depth check
         depth = 0
         parent = self.parent
         while parent:
             depth += 1
             parent = parent.parent
-        if depth > MAX_DEPTH:
-            raise ValidationError(f"Exceeded maximum depth of {MAX_DEPTH}.")
+            if depth > MAX_DEPTH:
+                raise ValidationError(f"Exceeded maximum depth of {MAX_DEPTH}.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         content_obj_id = self.content_object.id if self.content_object else "None"

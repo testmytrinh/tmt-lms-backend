@@ -29,7 +29,7 @@ def sync_course_class_open_access(sender, instance: CourseClass, created, **kwar
     return sync_single_type_subjects(
         object_key=f"{CourseClassRelation.TYPE}:{instance.id}",
         subject_type=UserRelation.TYPE,
-        relation=CourseClassRelation.GUEST,
+        relation=CourseClassRelation.CAN_VIEW,
         desired_subject_ids=set(["*"]) if instance.is_open else set(),
     )
 

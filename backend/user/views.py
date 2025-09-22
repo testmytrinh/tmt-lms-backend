@@ -105,16 +105,11 @@ class UserViewSet(ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="activate/(?P<token>.+)")
     def activate(self, request, token):
-        try:
-            user = queries.get_inactive_user_by_activation_token(token)
-            if user:
-                user.is_active = True
-                user.save(update_fields=["is_active"])
-                return Response(
-                    {"detail": "Account activated successfully."}, status=200
-                )
-        except Exception:
-            return Response({"detail": "Invalid or expired token."}, status=400)
+        if user := queries.get_inactive_user_by_activation_token(token):
+            user.is_active = True
+            user.save(update_fields=["is_active"])
+            return Response({"detail": "Account activated successfully."}, status=200)
+        return Response({"detail": "Invalid or expired token."}, status=400)
 
     @action(detail=False, methods=["get"])
     def me(self, request):
