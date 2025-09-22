@@ -47,6 +47,14 @@ class ContentNodeWriteSerializer(serializers.ModelSerializer):
         queryset=ContentType.objects.all(),
     )
     content_object_data = serializers.JSONField(write_only=True, required=False)
+    content_object = serializers.SerializerMethodField()
+
+    def get_content_object(self, obj):
+        if isinstance(obj.content_object, Module):
+            return ModuleSerializer(obj.content_object).data
+        elif isinstance(obj.content_object, Lesson):
+            return LessonSerializer(obj.content_object).data
+        return None
 
     class Meta:
         model = ContentNode
@@ -58,6 +66,7 @@ class ContentNodeWriteSerializer(serializers.ModelSerializer):
             "parent",
             "order",
             "content_object_data",
+            "content_object",
         ]
 
     def _get_model_and_serializer(self, content_type: ContentType):
