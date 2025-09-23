@@ -40,7 +40,7 @@ class CourseClassAdmin(ModelAdmin):
     fieldsets = (
         (None, {
             "fields": (
-                "name", "description", "course", "term", "department", "course_template",
+                "name", "description", "course", "term", "department",
                 "is_open", "is_active", "start_date", "end_date",
             )
         }),

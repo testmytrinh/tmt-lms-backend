@@ -161,6 +161,21 @@ class CourseClassViewTests(APITestCase):
         )
         self.assertEqual(response.status_code, 403)
 
+    def test_my_enrollment_not_found(self):
+        course = Course.objects.create(name="Test Course", description="A test course")
+        course_class = CourseClass.objects.create(
+            course=course,
+            name="Test Class",
+            start_date="2023-01-01",
+            end_date="2023-06-01",
+            is_active=True,
+            is_open=False,
+        )
+        response = self.client.get(
+            reverse("course-class-my-enrollment", args=[course_class.id])
+        )
+        self.assertEqual(response.status_code, 404)
+
     def test_update_course_class_success(self):
         course = Course.objects.create(name="Test Course", description="A test course")
         course_class = CourseClass.objects.create(

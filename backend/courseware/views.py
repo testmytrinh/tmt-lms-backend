@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAdminUser
 
 from .permissions import (
     UserCanCreateClassNodes,
@@ -20,13 +21,13 @@ from . import queries
 
 class ContentNodeViewSet(viewsets.ModelViewSet):
     PERMISSION_MAP = {
-        "list": [UserCanListClasssNodes],
-        "retrieve": [UserCanViewContentNode],
-        "create": [UserCanCreateClassNodes],
-        "update": [UserCanEditContentNode],
-        "partial_update": [UserCanEditContentNode],
-        "destroy": [UserCanModifyContentNode],
-        "tree": [UserCanListClasssNodes],
+        "list": [IsAdminUser | UserCanListClasssNodes],
+        "retrieve": [IsAdminUser | UserCanViewContentNode],
+        "create": [IsAdminUser | UserCanCreateClassNodes],
+        "update": [IsAdminUser | UserCanEditContentNode],
+        "partial_update": [IsAdminUser | UserCanEditContentNode],
+        "destroy": [IsAdminUser | UserCanModifyContentNode],
+        "tree": [IsAdminUser | UserCanListClasssNodes],
     }
     SERIALIZER_MAP = {
         "list": ContentNodeListSerializer,
