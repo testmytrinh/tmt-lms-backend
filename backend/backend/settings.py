@@ -19,13 +19,14 @@ DEBUG = getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = ["api.localhost", "localhost"]
 
-TEST_RUNNER = 'backend.test_runner.MyCustomTestRunner'
+TEST_RUNNER = "backend.test_runner.MyCustomTestRunner"
 
 # Application definition
 
 INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
+    "storages",
     "corsheaders",
     # https://docs.djangoproject.com/en/5.2/ref/contrib/postgres/search/
     # To use postgres full-text search,'django.contrib.postgres' must be in your INSTALLED_APPS.
@@ -51,6 +52,7 @@ INSTALLED_APPS = [
     "courses",
     "courseware",
     "enrollment",
+    "storage",
 ]
 
 AUTH_USER_MODEL = "user.User"
@@ -215,3 +217,21 @@ UNFOLD = {
 CRISPY_TEMPLATE_PACK = "unfold_crispy"
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = ["unfold_crispy"]
+
+# django-storages (S3)
+# If these are set, django-storages will use S3Boto3Storage. Public/private configured below.
+AWS_ACCESS_KEY_ID = getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = getenv("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = getenv("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_REGION_NAME = getenv("AWS_S3_REGION_NAME", "us-east-1")
+AWS_S3_CUSTOM_DOMAIN = getenv("AWS_S3_CUSTOM_DOMAIN")
+
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
