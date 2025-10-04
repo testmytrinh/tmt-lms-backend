@@ -9,7 +9,7 @@ from .models import Enrollment, EnrollmentRole, StudyGroup
 
 
 @dataclass
-class CourseClassAccess:
+class EnrollmentAccess:
     enrollment: InitVar[Enrollment]
     can_view: bool = field(init=False, default=False)
     can_edit: bool = field(init=False, default=False)
@@ -34,7 +34,7 @@ class EnrollmentReadSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_access(self, obj):
-        return asdict(CourseClassAccess(enrollment=obj))
+        return asdict(EnrollmentAccess(enrollment=obj))
 
 
 class EnrollmentWriteSerializer(serializers.ModelSerializer):

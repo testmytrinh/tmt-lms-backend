@@ -82,16 +82,11 @@ class EnrollmentAuthzSyncTestCase(TestCase):
             )
         ).result
 
-        find_item = partial(
-            lambda corr_id, items: next(
-                i for i in items if i.correlation_id == corr_id
-            ).allowed,
-            items=res,
-        )
-        self.assertTrue(find_item("1"))  # Student
-        self.assertTrue(find_item("2"))  # Can View
-        self.assertFalse(find_item("3"))  # Cannot Edit
-        self.assertFalse(find_item("4"))  # Cannot Modify
+        allowed_map = {item.correlation_id: item.allowed for item in res}
+        self.assertTrue(allowed_map["1"])  # Student
+        self.assertTrue(allowed_map["2"])  # Can View
+        self.assertFalse(allowed_map["3"])  # Cannot Edit
+        self.assertFalse(allowed_map["4"])  # Cannot Modify
 
     def test_guest_sync(self):
         Enrollment.objects.create(
@@ -116,13 +111,8 @@ class EnrollmentAuthzSyncTestCase(TestCase):
             )
         ).result
 
-        find_item = partial(
-            lambda corr_id, items: next(
-                i for i in items if i.correlation_id == corr_id
-            ).allowed,
-            items=res,
-        )
-        self.assertTrue(find_item("0"))  # Guest
-        self.assertTrue(find_item("1"))  # Can View
-        self.assertFalse(find_item("2"))  # Cannot Edit
-        self.assertFalse(find_item("3"))  # Cannot Modify
+        allowed_map = {item.correlation_id: item.allowed for item in res}
+        self.assertTrue(allowed_map["0"])  # Guest
+        self.assertTrue(allowed_map["1"])  # Can View
+        self.assertFalse(allowed_map["2"])  # Cannot Edit
+        self.assertFalse(allowed_map["3"])  # Cannot Modify
