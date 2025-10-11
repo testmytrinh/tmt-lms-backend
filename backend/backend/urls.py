@@ -5,6 +5,8 @@ from rest_framework.routers import DefaultRouter
 from django.conf.urls.static import static
 
 from rest_framework_simplejwt.views import TokenVerifyView
+
+
 from user.views import (
     CookieTokenObtainPairView,
     CookieTokenRefreshView,
@@ -21,6 +23,7 @@ from enrollment.views import (
     EnrollmentViewSet,
 )
 from courseware.views import ContentNodeViewSet
+from storage.views import FolderViewSet, FileViewSet
 
 router = DefaultRouter()
 
@@ -36,6 +39,8 @@ router.register(
     ContentNodeViewSet,
     basename="content-node",
 )
+router.register(r"folders", FolderViewSet, basename="folder")
+router.register(r"files", FileViewSet, basename="file")
 
 
 urlpatterns = [

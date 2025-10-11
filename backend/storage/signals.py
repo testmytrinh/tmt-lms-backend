@@ -11,7 +11,7 @@ from .models import File, Folder
 
 
 @receiver(post_save, sender=Folder)
-def create_folder_in_openfga(sender, instance: Folder, created, **kwargs):
+def sync_folder_in_openfga(sender, instance: Folder, created, **kwargs):
     sync_single_type_subjects(
         object_key=f"{FolderRelation.TYPE}:{instance.id}",
         subject_type=UserRelation.TYPE,
@@ -29,7 +29,7 @@ def create_folder_in_openfga(sender, instance: Folder, created, **kwargs):
 
 
 @receiver(post_save, sender=File)
-def create_file_in_openfga(sender, instance: File, created, **kwargs):
+def sync_file_in_openfga(sender, instance: File, created, **kwargs):
     sync_single_type_subjects(
         object_key=f"{FileRelation.TYPE}:{instance.id}",
         subject_type=UserRelation.TYPE,
