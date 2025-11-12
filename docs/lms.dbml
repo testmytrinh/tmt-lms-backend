@@ -1,0 +1,245 @@
+Table user [headercolor: #175e7a] {
+	id int [ pk, unique ]
+	email varchar(100) [ not null ]
+	password varchar(255) [ not null ]
+	is_active bool [ not null, default: false ]
+}
+
+Table course_category [headercolor: #175e7a] {
+	id int [ pk, unique ]
+	name varchar(255)
+}
+
+Table content_type [headercolor: #175e7a] {
+	id int [ pk, unique ]
+	app varchar(255)
+	model varchar(255)
+}
+
+Table ContentNode [headercolor: #175e7a] {
+	id int [ pk, unique ]
+	object_id int
+	course_class_id int
+	parent int
+	content_type_id int
+	order int
+}
+
+Table course_categories [headercolor: #175e7a] {
+	id int [ pk, unique ]
+	course_category_id int [ not null ]
+	course_id int [ not null ]
+}
+
+Table course [headercolor: #175e7a] {
+	id int [ pk, unique ]
+	name varchar(255)
+	is_active boolean
+}
+
+Table term [headercolor: #175e7a] {
+	id int [ pk, unique ]
+	name varchar(255)
+	start_date date
+	end_date date
+}
+
+Table department [headercolor: #175e7a] {
+	id int [ pk, unique ]
+	name varchar(255)
+}
+
+Table course_class [headercolor: #175e7a] {
+	id int [ pk, unique ]
+	name varchar(255)
+	start_date date
+	end_date date
+	course_id int [ not null ]
+	term_id int
+	department_id int
+}
+
+Table enrollment [headercolor: #175e7a] {
+	id int [ pk, unique ]
+	enrolled_at datetime
+	role enum(teacher,student,guest)
+	user_id int [ not null ]
+	class_id int [ not null ]
+}
+
+Table module [headercolor: #175e7a] {
+	id int [ pk, unique ]
+	name varchar(255)
+	content text
+	is_active bool
+}
+
+Table lesson [headercolor: #175e7a] {
+	id int [ pk, unique ]
+	name varchar(255)
+	content text
+	is_active bool
+}
+
+Table coding_question [headercolor: #175e7a] {
+	id integer [ pk, increment, unique ]
+	name varchar(200)
+	created_at timestamp
+	updated_at timestamp
+	description text
+	hidden boolean [ default: false ]
+	checksum varchar(255)
+	runtime_params varchar(500)
+	hide_submission_results boolean [ default: false ]
+	memory_limit_gb int
+	cpu_limit int
+}
+
+Table TestCase [headercolor: #175e7a] {
+	id integer [ pk, increment, unique ]
+	coding_question_id integer
+	input_data text
+	expected_output text
+	is_hidden boolean [ default: true ]
+	timeout float [ default: 2 ]
+}
+
+Table SupportedLanguage [headercolor: #175e7a] {
+	id integer [ pk, increment, unique ]
+	name varchar(50)
+	version varchar(50)
+}
+
+Table Submission [headercolor: #175e7a] {
+	id integer [ pk, increment, unique ]
+	user_id integer
+	coding_question_id integer
+	language_id integer
+	code text
+	status varchar(20) [ default: pending ]
+	result json
+	created_at timestamp
+}
+
+Table group [headercolor: #175e7a] {
+	id int [ pk, unique ]
+	name varchar(50) [ not null ]
+}
+
+Table user_groups [headercolor: #175e7a] {
+	user_group_id int [ pk, unique ]
+	user_id int [ not null ]
+	group_id int [ not null ]
+	assigned_at timestamp [ not null ]
+}
+
+Table permission [headercolor: #175e7a] {
+	id int [ pk, unique ]
+	name varchar(255) [ not null ]
+	code varchar(100) [ not null ]
+}
+
+Table group_permissions [headercolor: #175e7a] {
+	id int [ pk, unique ]
+	group_id int [ not null ]
+	permission_id int [ not null ]
+}
+
+Table user_permissions [headercolor: #175e7a] {
+	id int [ pk, unique ]
+	user_id int [ not null ]
+	permission_id int [ not null ]
+}
+
+Table notification [headercolor: #175e7a] {
+	notification_id int [ pk, unique ]
+	user_id int [ not null ]
+	notification_type varchar(50) [ not null ]
+	notification_content text
+	is_read bool [ not null ]
+	sent_at timestamp [ not null ]
+}
+
+Ref fk_course_class_id_ContentNode {
+	course_class.id < ContentNode.course_class_id [ delete: no action, update: no action ]
+}
+
+Ref fk_ContentNode_id_ContentNode {
+	ContentNode.id < ContentNode.parent [ delete: no action, update: no action ]
+}
+
+Ref fk_content_type_id_ContentNode {
+	content_type.id < ContentNode.content_type_id [ delete: no action, update: no action ]
+}
+
+Ref fk_course_category_id_course_categories {
+	course_category.id < course_categories.course_category_id [ delete: no action, update: no action ]
+}
+
+Ref fk_course_id_course_categories {
+	course.id < course_categories.course_id [ delete: no action, update: no action ]
+}
+
+Ref fk_course_id_course_class {
+	course.id < course_class.course_id [ delete: no action, update: no action ]
+}
+
+Ref fk_term_id_course_class {
+	term.id < course_class.term_id [ delete: no action, update: no action ]
+}
+
+Ref fk_department_id_course_class {
+	department.id < course_class.department_id [ delete: no action, update: no action ]
+}
+
+Ref fk_user_id_enrollment {
+	user.id < enrollment.user_id [ delete: no action, update: no action ]
+}
+
+Ref fk_course_class_id_enrollment {
+	course_class.id < enrollment.class_id [ delete: no action, update: no action ]
+}
+
+Ref fk_coding_question_id_TestCase {
+	coding_question.id < TestCase.coding_question_id [ delete: no action, update: no action ]
+}
+
+Ref fk_coding_question_id_Submission {
+	coding_question.id < Submission.coding_question_id [ delete: no action, update: no action ]
+}
+
+Ref fk_user_id_Submission {
+	user.id < Submission.user_id [ delete: no action, update: no action ]
+}
+
+Ref fk_SupportedLanguage_id_Submission {
+	SupportedLanguage.id < Submission.language_id [ delete: no action, update: no action ]
+}
+
+Ref fk_user_id_user_groups {
+	user.id < user_groups.user_id [ delete: no action, update: no action ]
+}
+
+Ref fk_group_id_user_groups {
+	group.id < user_groups.group_id [ delete: no action, update: no action ]
+}
+
+Ref fk_group_id_group_permissions {
+	group.id < group_permissions.group_id [ delete: no action, update: no action ]
+}
+
+Ref fk_permission_id_group_permissions {
+	permission.id < group_permissions.permission_id [ delete: no action, update: no action ]
+}
+
+Ref fk_user_id_user_permissions {
+	user.id < user_permissions.user_id [ delete: no action, update: no action ]
+}
+
+Ref fk_permission_id_user_permissions {
+	permission.id < user_permissions.permission_id [ delete: no action, update: no action ]
+}
+
+Ref fk_user_id_notification {
+	user.id < notification.user_id [ delete: no action, update: no action ]
+}

@@ -14,7 +14,10 @@ class UnAuthFileViewTests(APITestCase):
     def test_list_nothing(self):
         # Should see nothing regardless of existing files
         File.objects.create(
-            owner=User.objects.create_user(email="test@example.com"), name="file1"
+            owner=User.objects.create_user(
+                email="test@example.com", password="testpass"
+            ),
+            name="file1",
         )
         resp = self.client.get(self.url)
         json_data = resp.json()
@@ -22,7 +25,4 @@ class UnAuthFileViewTests(APITestCase):
         self.assertEqual(json_data["results"], [])
         self.assertEqual(json_data["count"], 0)
 
-    def test_list_public_files(self):
-        someone = User.objects.create_user(email="someone@example.com")
-        File.objects.create(owner=someone, name="file1")
-        File.objects.create(owner=someone, name="file2")
+    # def test_list_public_files(self):

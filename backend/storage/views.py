@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
@@ -162,3 +162,12 @@ class FileViewSet(viewsets.ModelViewSet):
     #     storage = PrivateMediaStorage()
     #     url = storage.url(file.key.removeprefix(storage.location + "/"))
     #     return Response({"url": url})
+
+
+class FileShareViewSet(
+    viewsets.GenericViewSet,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+):
+    permission_classes = [IsAuthenticated]

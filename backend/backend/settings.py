@@ -70,6 +70,7 @@ MIDDLEWARE = [
 # SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:5174",
     "http://api.localhost",
     "http://lms.localhost",
 ]
